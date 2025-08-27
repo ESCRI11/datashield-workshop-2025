@@ -1,0 +1,99 @@
+---
+title: "Environment Setup"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+Welcome to the workshop on deploying Opal and Molgenis Armadillo infrastructure using Docker. This guide will help you set up your environment to ensure a smooth experience during the workshop.
+
+## Prerequisites
+
+### Operating System
+
+- **Windows Users**: Ensure you have [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) installed. This allows you to run a Linux environment directly on Windows, which is necessary for Docker.
+- **Mac and Linux Users**: You are good to go with your native terminal.
+
+### Software Requirements
+
+1. **Docker (Engine) with Docker Compose v2 enabled**
+   - Windows/macOS: Docker Desktop bundles Compose v2.
+   - Linux: Install the Compose plugin if not already present.
+2. **Git**
+   - Used for cloning workshop repositories and version control
+   - Download from [git-scm.com](https://git-scm.com/downloads)
+   - Alternative: [GitHub Desktop](https://desktop.github.com/) for a graphical interface
+   - Verify installation: `git --version`
+3. **Terminal or shell** (PowerShell, Windows Terminal, macOS Terminal, Linux shell)
+4. **Text Editor/IDE**: VS Code, Sublime, Vim, or similar.
+5. **R (>= 4.2) and RStudio Desktop** (optional but recommended for client-side checks)
+
+### Hardware requirements
+
+- At least 4 CPU cores and 8 GB RAM recommended (4 GB minimum)
+- 10+ GB free disk space for images, containers, and volumes
+
+### Network and permissions
+
+- Administrative rights to install software
+- Unrestricted internet access to `docker.io`, `ghcr.io` and GitHub
+- VPN/proxy configured for Docker if required by your organization
+- Virtualization enabled in BIOS/UEFI (Intel VT-x/AMD-V or Apple virtualization)
+
+## Install Docker
+
+### Windows (WSL2)
+
+- Install and enable WSL2: [Microsoft guide](https://docs.microsoft.com/en-us/windows/wsl/install)
+- Install Docker Desktop: [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+- In Docker Desktop settings, enable "Use the WSL 2 based engine" and integration with your WSL distro
+
+### macOS
+
+- Install Docker Desktop: [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+
+### Linux
+
+- Install Docker Engine following the official docs: [Install Docker Engine](https://docs.docker.com/engine/install/)
+- Ensure the Docker Compose v2 plugin is installed: [Compose plugin](https://docs.docker.com/compose/install/linux/)
+
+#### Linux post-install (non-root usage)
+
+```bash
+# Add your user to the docker group and activate it
+sudo usermod -aG docker $USER
+# Restart your terminal to activate the changes
+```
+
+## Verify your setup
+
+Run the following commands. All should succeed without errors.
+
+```bash
+docker --version
+docker compose version
+docker run --rm hello-world
+```
+
+## Additional Notes
+
+- Ensure your Docker engine is allocated with sufficient memory (at least 4GB; 8GB recommended) to avoid performance issues.
+- Close applications using typical service ports you plan to map (e.g., 8080, 8443) to avoid conflicts.
+- On corporate networks, confirm Docker can pull images from public registries.
+- Familiarize yourself with basic Docker commands and operations, as we will be interacting with the console during the workshop.
+
+## Learn Docker: quick references
+
+- Docker Getting Started: [docs.docker.com/get-started](https://docs.docker.com/get-started/)
+- Docker CLI reference: [docs.docker.com/engine/reference/commandline/docker](https://docs.docker.com/engine/reference/commandline/docker/)
+- Docker Compose overview: [docs.docker.com/compose](https://docs.docker.com/compose/)
+- Volumes and persistence: [docs.docker.com/storage/volumes](https://docs.docker.com/storage/volumes/)
+- Play with Docker (hands-on labs): [labs.play-with-docker.com](https://labs.play-with-docker.com/)
+
+By following these steps, your environment will be ready for the workshop. If you encounter any issues, feel free to reach out to the workshop organizers for assistance.

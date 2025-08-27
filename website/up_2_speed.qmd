@@ -1,0 +1,70 @@
+---
+title: "Get up to speed"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+This workshop is a hands-on primer on installing and running secure, federated DataSHIELD backends with Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self-signed TLS, and then show how to go live with Let’s Encrypt.
+
+### What you’ll learn
+- Deploy Opal and Armadillo using Docker Compose (no Kubernetes)
+- Run Nginx as a reverse proxy: local self‑signed → Let’s Encrypt
+- Practical Linux/SSH and terminal workflows (great for cloud)
+- Optional: lightweight host monitoring with Telegraf + Grafana (time permitting)
+
+### Audience and setup
+- Skill level: beginner-friendly. We’ll explain each step as we go.
+- Follow‑along encouraged on your laptop (Mac/Windows/Linux). If you prefer to watch, you’ll still get all commands and files.
+
+### Prerequisites checklist (please skim before we start)
+- Laptop: macOS (Apple Silicon is fine), Windows 10/11, or Linux
+- Containers:
+  - macOS/Windows: install Docker Desktop and ensure both `docker` and `docker compose` work
+    - Docker Desktop: [docs](https://docs.docker.com/desktop/)
+  - Linux: install Docker Engine and Compose v2 plugin (we’ll use `docker compose`, not `docker-compose`)
+    - Docker Engine install: [docs](https://docs.docker.com/engine/install/)
+    - Compose v2 guidance: [migrate](https://docs.docker.com/compose/releases/migrate/)
+- Terminal + SSH: basic comfort with shell, `ssh user@host`
+- Ports:
+  - Local: allow Docker to bind 80/443 (stop other services using these ports)
+  - Cloud (optional): if testing live TLS, ensure 22/80/443 are open
+- Domain (optional, for live demo): have a test DNS name ready if you want to issue real certificates with Let’s Encrypt; otherwise we’ll stick to self‑signed locally
+
+### Target platforms we’ll mention
+- On‑prem demo first; cloud notes included
+- Cloud suggestion: Ubuntu 24.04 LTS on x86_64 for quick starts
+
+### What we’ll deploy (at a glance)
+- Reverse proxy: Nginx
+- DataSHIELD backends: Opal and Armadillo (latest images)
+- R server (Rock) alongside Opal for DataSHIELD R packages
+- Stage 1 (local): self‑signed TLS
+- Stage 2 (live): DNS + Certbot for Let’s Encrypt on Ubuntu
+
+:::: {.callout-tip}
+No prior sysadmin experience required. We’ll keep commands copy‑pasteable and explain the “why” briefly as we go.
+::::
+
+### Pre‑reading (short and optional)
+- DataSHIELD overview paper: [International Journal of Epidemiology](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4276062/)
+- Opal (DataSHIELD server) overview: [OBiBa Opal](https://www.obiba.org/pages/products/opal/)
+- DataSHIELD packages documentation: [cran.datashield.org](https://cran.datashield.org/web/)
+- Docker basics for this workshop:
+  - Docker Desktop (Mac/Windows): [docs](https://docs.docker.com/desktop/)
+  - Compose v2 usage/migration: [docs](https://docs.docker.com/compose/releases/migrate/)
+- Let’s Encrypt on Ubuntu + Nginx (for Stage 2):
+  - Certbot + Nginx (Ubuntu): [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04)
+
+### What we will not cover
+- Kubernetes, advanced identity (OIDC/Keycloak), or firewall hardening beyond basics
+- Data layer specifics (databases/object storage) for Armadillo—kept out to stay focused on deployment flow
+
+### Outcomes
+By the end, you’ll have a working local deployment (Opal/Armadillo behind Nginx with TLS) and a clear path to promote it to a live DNS‑backed setup with Let’s Encrypt.

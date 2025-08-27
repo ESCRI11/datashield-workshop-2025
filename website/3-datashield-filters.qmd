@@ -1,0 +1,102 @@
+---
+title: "3. DataSHIELD filters"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+We just created our first DataSHIELD package. Cool. Now, let's continue this journey by taking a look at the filter parameters, how to use them, and how to create new ones.
+
+If the reader has some prior experience with DataSHIELD, the concept may sound familiar, if not, there is no problem. On the base package, there are a [collection of filters](https://data2knowledge.atlassian.net/wiki/spaces/DSDEV/pages/714768398/Disclosure+control) that affect the behaviour of different functions (of that same package). More precisely they are there to prevent disclosure of individual data, _aka_ the core objective of the technology. These filter values can be configured by the data owners at their own likings.
+
+This might bring some light to the developers. It is _your_ job to make an analysis package secure. It is _your_ job to implement disclosure traps. DataSHIELD just brings you an infrastructure with the tools to build those security layers.
+
+Having said that, when we build a new package we have two choices, **1** use the current filter values from `dsBase`, **2** create our own new filter variables.
+
+::: {.callout-note}
+Note that if we choose to use `dsBase` filter values, that package has to be available on the same environment (Opal Rock Profile or Armadillo Analisis environment) where our new package will run. Generally speaking this will be the case, as the base package is almost mandatory to perform any kind of task, however, it does not need to be like this.
+:::
+
+Before digging into the two options we just introduced. Let's take a look at what exactly are these "filter values", how are defined, and how do they fit within the structure of a regular R package.
+
+## Options slot of an R package
+
+Filter values are only available on the server, as we do not want the analysts to be able to manipulate them, just the data owners. For that reason they are defined on the server packages. More precisely they are defined on the `DESCRIPTION` file of the R package. This file typically contains information about the author of the package, which dependencies it has, the licensing... more precisely [these](https://r-pkgs.org/description.html#the-description-file). However, this file can also contain [additional metadata](https://r-pkgs.org/description.html#sec-description-custom-fields), this feature is what is used to declare filters with their correspondent default values on a DataSHIELD package. Take a look at the `dsBase` [DESCRIPTION file](https://github.com/datashield/dsBase/blob/master/DESCRIPTION#L185-L196) for example.
+
+Now let's continue by checking how to access those values within our package functions.
+
+## Accessing a filter value
+
+In order to retrieve the value of a filter on our package functions we will use the `getOption` function. If we want to retrieve the value of the `my.new.filter` filter, we will do:
+
+```{r eval = FALSE}
+getOption("my.new.filter")
+```
+
+::: {.callout-note}
+If we try to retrieve a value of an option that is not defined, it will return `NULL`, this can be convenient to handle exceptions.
+:::
+
+Following that we can see that if we want to use a filter from `dsBase`, we just have to take a look at the available ones and use them:
+
+```{r eval = FALSE}
+getOption("default.nfilter.glm")
+```
+
+Also if we define our own filter (on our package DESCRIPTION file):
+
+```{r eval = FALSE}
+Options:
+    nice.filter=5
+```
+
+::: {.callout-tip collapse="true"}
+## Further info
+
+Here we see that the filter contains a numeric variable. However they are not limited to that, they can also contain strings and other R data types.
+
+```{r eval = FALSE}
+Options:
+    even.nicer.filter="hello"
+```
+:::
+
+We retrieve it by:
+
+```{r eval = FALSE}
+getOption("nice.filter")
+```
+
+## Exercise 3
+
+For this exercise, we will continue working on our new packges.
+
+1. Create a new filter named `myFilter`. Set the default value as numeric 3.
+
+2. Modify the `getColnamesDS` function to retrieve the `myFilter` value.
+
+3. If the number of columns of the data frame is less than `myFilter` return an error.
+
+::: {.callout-tip collapse="true"}
+## Errors in `R`
+
+In `R` we can throw errors (or exceptions) using the `stop` function.
+
+E.g.
+```{r eval = FALSE}
+stop("This is my error message")
+```
+:::
+
+4. Test your new development using `DSLite`. Does it throw the error we expect?
+
+::: {.callout-caution collapse="true"}
+## Exercise solution
+[Open in new tab](https://github.com/ESCRI11/datashield-workshop-2024-exercises/tree/main/Exercise-3){target="_blank"}
+:::

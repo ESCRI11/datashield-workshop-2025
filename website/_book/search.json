@@ -1,0 +1,22 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "DataSHIELD Workshop",
+    "section": "",
+    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>website</span>"
+    ]
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "2  About",
+    "section": "",
+    "text": "About this site",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>About</span>"
+    ]
+  }
+]

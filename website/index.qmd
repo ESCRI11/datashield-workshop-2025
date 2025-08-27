@@ -1,0 +1,60 @@
+---
+title: "Introduction"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+:::: {style="display: flex; justify-content: space-around;"}
+![Image 1](figures/logo1.png){style="height: 81px; margin-right: 20px;"}
+![Image 2](figures/logo2.png){style="height: 81px; margin-left: 20px;"}
+::::
+
+# Funding
+
+# Introduction 
+
+This site hosts materials for a hands‑on workshop on installing and operating DataSHIELD backends using Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self‑signed TLS, and then show how to go live with Let's Encrypt. Expect practical Linux/SSH usage from a terminal and a copy‑pasteable flow you can follow on your laptop.
+
+# Workshop Details
+
+This workshop will be delivered at the **DataSHIELD 2025 Conference** in Lausanne (23-26 September 2025) on **Tuesday, September 23rd from 13:30 to 16:30** at room **POL-338** (TBC).
+
+# Getting started
+
+- Review your setup: [Environment Setup](env_setup.qmd)
+- Skim the essentials: [Get up to speed](up_2_speed.qmd)
+
+# Workshop scope
+
+- Deploy Opal and Armadillo with Docker Compose (no Kubernetes)
+- Nginx reverse proxy: local self‑signed → Let’s Encrypt
+- Basic Linux/SSH workflows suitable for on‑prem and cloud
+- Optional: lightweight monitoring with Telegraf + Grafana (time permitting)
+
+# Who this is for
+
+- Beginners to sysadmin tasks; we explain each step
+- Attendees on macOS (Apple Silicon ok), Windows (Docker Desktop/WSL2), or Linux
+- Follow‑along is encouraged but not mandatory
+
+# Prerequisites (summary)
+
+See details in [Environment Setup](env_setup.qmd). In short:
+- Docker Desktop (Mac/Windows) or Docker Engine + Compose v2 (Linux)
+- Terminal + SSH access; ability to open ports 80/443 locally
+- Optional domain name if you want to test live certificates
+
+# Schedule
+
+To be announced.
+
+# Credits
+
+Materials developed by Dick Postma (Molgenis) and Xavier Escribà Montagut (BigOmics Analytics SA).

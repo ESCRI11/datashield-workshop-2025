@@ -1,0 +1,28 @@
+project:
+  type: book
+  output-dir: ../docs
+
+book:
+  title: "DataSHIELD Workshop: Setting up the infrastructure"
+  author: Dick Postma and Xavier Escribà Montagut
+  repo-url: https://github.com/ESCRI11/datashield-workshop-2025
+  repo-actions: [issue]
+  sharing: [twitter, linkedin]
+  favicon: favicon.ico
+  chapters:
+    - index.qmd
+    - env_setup.qmd
+    - up_2_speed.qmd
+    # - 1-datashield-packages-structure.qmd
+    # - 2-dslite.qmd
+    # - 3-datashield-filters.qmd
+    # - 4-datashield-pooled.qmd
+    # - about.qmd
+  sidebar:
+    logo: logo.svg
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    number-sections: false

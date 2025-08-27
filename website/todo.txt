@@ -1,0 +1,9 @@
+
+
+ara ia tenim el nostre primer paquet, com el testejem? aja punt 2. dsLite, testing packages locally
+
+punt X parlar de lo de resources.js per el opal? igual deixar la info per alli per si algu se la vol llegir?
+igual seccio desenvolupar resources//igual aixo es un altre workshop?
+
+
+ultima seccio fer servir opalr per pujar el paquet a produccio/deployment (preguntar a algu com feru amb armadillo?)

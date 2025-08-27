@@ -1,0 +1,14 @@
+---
+title: "4. Pooled and study-level functions"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+We

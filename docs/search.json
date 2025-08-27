@@ -1,0 +1,82 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "DataSHIELD Workshop: Setting up the infrastructure",
+    "section": "",
+    "text": "Funding\n\n\nIntroduction\nThis site hosts materials for a hands‑on workshop on installing and operating DataSHIELD backends using Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self‑signed TLS, and then show how to go live with Let’s Encrypt. Expect practical Linux/SSH usage from a terminal and a copy‑pasteable flow you can follow on your laptop.\n\n\nWorkshop Details\nThis workshop will be delivered at the DataSHIELD 2025 Conference in Lausanne (23-26 September 2025) on Tuesday, September 23rd from 13:30 to 16:30 at room POL-338 (TBC).\n\n\nGetting started\n\nReview your setup: Environment Setup\nSkim the essentials: Get up to speed\n\n\n\nWorkshop scope\n\nDeploy Opal and Armadillo with Docker Compose (no Kubernetes)\nNginx reverse proxy: local self‑signed → Let’s Encrypt\nBasic Linux/SSH workflows suitable for on‑prem and cloud\nOptional: lightweight monitoring with Telegraf + Grafana (time permitting)\n\n\n\nWho this is for\n\nBeginners to sysadmin tasks; we explain each step\nAttendees on macOS (Apple Silicon ok), Windows (Docker Desktop/WSL2), or Linux\nFollow‑along is encouraged but not mandatory\n\n\n\nPrerequisites (summary)\nSee details in Environment Setup. In short: - Docker Desktop (Mac/Windows) or Docker Engine + Compose v2 (Linux) - Terminal + SSH access; ability to open ports 80/443 locally - Optional domain name if you want to test live certificates\n\n\nSchedule\nTo be announced.\n\n\nCredits\nMaterials developed by Dick Postma (Molgenis) and Xavier Escribà Montagut (BigOmics Analytics SA).",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introduction</span>"
+    ]
+  },
+  {
+    "objectID": "env_setup.html",
+    "href": "env_setup.html",
+    "title": "Environment Setup",
+    "section": "",
+    "text": "Prerequisites",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
+    ]
+  },
+  {
+    "objectID": "env_setup.html#prerequisites",
+    "href": "env_setup.html#prerequisites",
+    "title": "Environment Setup",
+    "section": "",
+    "text": "Operating System\n\nWindows Users: Ensure you have WSL2 installed. This allows you to run a Linux environment directly on Windows, which is necessary for Docker.\nMac and Linux Users: You are good to go with your native terminal.\n\n\n\nSoftware Requirements\n\nDocker (Engine) with Docker Compose v2 enabled\n\nWindows/macOS: Docker Desktop bundles Compose v2.\nLinux: Install the Compose plugin if not already present.\n\nGit\n\nUsed for cloning workshop repositories and version control\nDownload from git-scm.com\nAlternative: GitHub Desktop for a graphical interface\nVerify installation: git --version\n\nTerminal or shell (PowerShell, Windows Terminal, macOS Terminal, Linux shell)\nText Editor/IDE: VS Code, Sublime, Vim, or similar.\nR (&gt;= 4.2) and RStudio Desktop (optional but recommended for client-side checks)\n\n\n\nHardware requirements\n\nAt least 4 CPU cores and 8 GB RAM recommended (4 GB minimum)\n10+ GB free disk space for images, containers, and volumes\n\n\n\nNetwork and permissions\n\nAdministrative rights to install software\nUnrestricted internet access to docker.io, ghcr.io and GitHub\nVPN/proxy configured for Docker if required by your organization\nVirtualization enabled in BIOS/UEFI (Intel VT-x/AMD-V or Apple virtualization)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
+    ]
+  },
+  {
+    "objectID": "env_setup.html#install-docker",
+    "href": "env_setup.html#install-docker",
+    "title": "Environment Setup",
+    "section": "Install Docker",
+    "text": "Install Docker\n\nWindows (WSL2)\n\nInstall and enable WSL2: Microsoft guide\nInstall Docker Desktop: Docker Desktop for Windows\nIn Docker Desktop settings, enable “Use the WSL 2 based engine” and integration with your WSL distro\n\n\n\nmacOS\n\nInstall Docker Desktop: Docker Desktop for Mac\n\n\n\nLinux\n\nInstall Docker Engine following the official docs: Install Docker Engine\nEnsure the Docker Compose v2 plugin is installed: Compose plugin\n\n\nLinux post-install (non-root usage)\n# Add your user to the docker group and activate it\nsudo usermod -aG docker $USER\n# Restart your terminal to activate the changes",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
+    ]
+  },
+  {
+    "objectID": "env_setup.html#verify-your-setup",
+    "href": "env_setup.html#verify-your-setup",
+    "title": "Environment Setup",
+    "section": "Verify your setup",
+    "text": "Verify your setup\nRun the following commands. All should succeed without errors.\ndocker --version\ndocker compose version\ndocker run --rm hello-world",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
+    ]
+  },
+  {
+    "objectID": "env_setup.html#additional-notes",
+    "href": "env_setup.html#additional-notes",
+    "title": "Environment Setup",
+    "section": "Additional Notes",
+    "text": "Additional Notes\n\nEnsure your Docker engine is allocated with sufficient memory (at least 4GB; 8GB recommended) to avoid performance issues.\nClose applications using typical service ports you plan to map (e.g., 8080, 8443) to avoid conflicts.\nOn corporate networks, confirm Docker can pull images from public registries.\nFamiliarize yourself with basic Docker commands and operations, as we will be interacting with the console during the workshop.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
+    ]
+  },
+  {
+    "objectID": "env_setup.html#learn-docker-quick-references",
+    "href": "env_setup.html#learn-docker-quick-references",
+    "title": "Environment Setup",
+    "section": "Learn Docker: quick references",
+    "text": "Learn Docker: quick references\n\nDocker Getting Started: docs.docker.com/get-started\nDocker CLI reference: docs.docker.com/engine/reference/commandline/docker\nDocker Compose overview: docs.docker.com/compose\nVolumes and persistence: docs.docker.com/storage/volumes\nPlay with Docker (hands-on labs): labs.play-with-docker.com\n\nBy following these steps, your environment will be ready for the workshop. If you encounter any issues, feel free to reach out to the workshop organizers for assistance.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
+    ]
+  },
+  {
+    "objectID": "up_2_speed.html",
+    "href": "up_2_speed.html",
+    "title": "Get up to speed",
+    "section": "",
+    "text": "This workshop is a hands-on primer on installing and running secure, federated DataSHIELD backends with Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self-signed TLS, and then show how to go live with Let’s Encrypt.\n\nWhat you’ll learn\n\nDeploy Opal and Armadillo using Docker Compose (no Kubernetes)\nRun Nginx as a reverse proxy: local self‑signed → Let’s Encrypt\nPractical Linux/SSH and terminal workflows (great for cloud)\nOptional: lightweight host monitoring with Telegraf + Grafana (time permitting)\n\n\n\nAudience and setup\n\nSkill level: beginner-friendly. We’ll explain each step as we go.\nFollow‑along encouraged on your laptop (Mac/Windows/Linux). If you prefer to watch, you’ll still get all commands and files.\n\n\n\nPrerequisites checklist (please skim before we start)\n\nLaptop: macOS (Apple Silicon is fine), Windows 10/11, or Linux\nContainers:\n\nmacOS/Windows: install Docker Desktop and ensure both docker and docker compose work\n\nDocker Desktop: docs\n\nLinux: install Docker Engine and Compose v2 plugin (we’ll use docker compose, not docker-compose)\n\nDocker Engine install: docs\nCompose v2 guidance: migrate\n\n\nTerminal + SSH: basic comfort with shell, ssh user@host\nPorts:\n\nLocal: allow Docker to bind 80/443 (stop other services using these ports)\nCloud (optional): if testing live TLS, ensure 22/80/443 are open\n\nDomain (optional, for live demo): have a test DNS name ready if you want to issue real certificates with Let’s Encrypt; otherwise we’ll stick to self‑signed locally\n\n\n\nTarget platforms we’ll mention\n\nOn‑prem demo first; cloud notes included\nCloud suggestion: Ubuntu 24.04 LTS on x86_64 for quick starts\n\n\n\nWhat we’ll deploy (at a glance)\n\nReverse proxy: Nginx\nDataSHIELD backends: Opal and Armadillo (latest images)\nR server (Rock) alongside Opal for DataSHIELD R packages\nStage 1 (local): self‑signed TLS\nStage 2 (live): DNS + Certbot for Let’s Encrypt on Ubuntu\n\n\n\n\n\n\n\nTip\n\n\n\nNo prior sysadmin experience required. We’ll keep commands copy‑pasteable and explain the “why” briefly as we go.\n\n\n\n\nPre‑reading (short and optional)\n\nDataSHIELD overview paper: International Journal of Epidemiology\nOpal (DataSHIELD server) overview: OBiBa Opal\nDataSHIELD packages documentation: cran.datashield.org\nDocker basics for this workshop:\n\nDocker Desktop (Mac/Windows): docs\nCompose v2 usage/migration: docs\n\nLet’s Encrypt on Ubuntu + Nginx (for Stage 2):\n\nCertbot + Nginx (Ubuntu): DigitalOcean guide\n\n\n\n\nWhat we will not cover\n\nKubernetes, advanced identity (OIDC/Keycloak), or firewall hardening beyond basics\nData layer specifics (databases/object storage) for Armadillo—kept out to stay focused on deployment flow\n\n\n\nOutcomes\nBy the end, you’ll have a working local deployment (Opal/Armadillo behind Nginx with TLS) and a clear path to promote it to a live DNS‑backed setup with Let’s Encrypt.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get up to speed</span>"
+    ]
+  }
+]

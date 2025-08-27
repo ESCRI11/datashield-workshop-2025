@@ -1,0 +1,42 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Introduction\"\n",
+        "format: html\n",
+        "---\n",
+        "\n",
+        "```{css}\n",
+        "#| echo: false\n",
+        "p {\n",
+        "  text-align: justify\n",
+        "}\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "# Introduction \n",
+        "\n",
+        "This website has been created to host the materials and exercises for the ‘Utilization of the unCoVer toolbox for covidー19 data analysis’, hosted at the UPM-Montegancedo Campus the 6th of May, 2022.\n",
+        "\n",
+        "On it you will find reading materials, setup tutorials, the workshop indications and practical exercises."
+      ],
+      "id": "e26b48e6"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/xavier/.local/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
