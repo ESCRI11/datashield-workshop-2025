@@ -13,9 +13,9 @@ book:
     - index.qmd
     - env_setup.qmd
     - up_2_speed.qmd
-    # - 1-datashield-packages-structure.qmd
-    # - 2-dslite.qmd
-    # - 3-datashield-filters.qmd
+    - 1-local-deploy.qmd
+    - 2-going-live.qmd
+    # - 3-going-live.qmd
     # - 4-datashield-pooled.qmd
     # - about.qmd
   sidebar:

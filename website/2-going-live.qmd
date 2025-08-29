@@ -1,0 +1,283 @@
+---
+title: "2. Going live: public deployment"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+### Goal
+Promote the local Opal stack to a public, DNS-backed deployment with valid TLS certificates from Let’s Encrypt (Certbot). We’ll reuse the same services, add ACME challenge handling, and tighten proxy settings.
+
+### Prerequisites
+- Registered domain name, e.g. `opal.example.org`
+- DNS A/AAAA record pointing to your server’s public IP
+- Ports 80 and 443 open to the internet (cloud SG/firewall/ufw)
+- Linux host recommended (Ubuntu 22.04/24.04), Docker + Compose v2
+
+### Files layout
+Use this folder layout for production:
+
+```
+opal-live/
+├── .env
+├── docker-compose.yml
+├── nginx/
+│   └── conf.d/
+│       └── default.conf
+├── certbot/
+│   └── www/                 # ACME webroot served on port 80
+└── letsencrypt/             # Certificates + renewal configs (populated by Certbot)
+```
+
+Create the directories:
+
+```bash
+mkdir -p opal-live/nginx/conf.d opal-live/certbot/www opal-live/letsencrypt
+```
+
+### 1) .env (public)
+
+```
+SERVER_NAME=opal.example.org
+EMAIL=admin@example.org
+OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
+MYSQLDATA_DATABASE=opal_data
+MYSQLDATA_USER=opal
+MYSQLDATA_PASSWORD=opalpass
+```
+
+### 2) docker-compose.yml (with Certbot)
+This extends the local setup by adding a `certbot` service and volumes for ACME and certificates.
+
+```yaml
+version: "3.9"
+
+services:
+  opal:
+    image: obiba/opal:latest
+    depends_on:
+      - rock
+      - mongo
+      - mysqldata
+    environment:
+      - OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MYSQLDATA_HOST=mysqldata
+      - MYSQLDATA_DATABASE=${MYSQLDATA_DATABASE}
+      - MYSQLDATA_USER=${MYSQLDATA_USER}
+      - MYSQLDATA_PASSWORD=${MYSQLDATA_PASSWORD}
+      - ROCK_HOSTS=rock:8085
+      - APP_URL=https://${SERVER_NAME}
+      - CSRF_ALLOWED=${SERVER_NAME}
+    volumes:
+      - opal_srv:/srv
+    networks:
+      - opalnet
+
+  rock:
+    image: obiba/rock:latest
+    networks:
+      - opalnet
+
+  mongo:
+    image: mongo:6.0
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - opalnet
+
+  mysqldata:
+    image: mysql:8
+    environment:
+      - MYSQL_DATABASE=${MYSQLDATA_DATABASE}
+      - MYSQL_USER=${MYSQLDATA_USER}
+      - MYSQL_PASSWORD=${MYSQLDATA_PASSWORD}
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - opalnet
+
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - opal
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - opalnet
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: sh -c "trap 'exit 0' TERM; tail -f /dev/null"
+
+volumes:
+  opal_srv:
+  mysql_data:
+  mongo_data:
+
+networks:
+  opalnet:
+```
+
+### 3) Nginx config for ACME + TLS
+Set `nginx/conf.d/default.conf`. Replace `opal.example.org` with your real domain. Nginx does not expand env vars inside config; use the literal domain.
+
+```nginx
+upstream opal_upstream {
+  server opal:8080;
+  keepalive 32;
+}
+
+# HTTP: serve ACME challenge, redirect everything else to HTTPS
+server {
+  listen 80;
+  server_name opal.example.org;
+
+  location /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+  }
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+# HTTPS: terminate TLS and proxy to Opal
+server {
+  listen 443 ssl http2;
+  server_name opal.example.org;
+
+  ssl_certificate     /etc/letsencrypt/live/opal.example.org/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/opal.example.org/privkey.pem;
+  ssl_session_timeout 1d;
+  ssl_session_cache shared:SSL:10m;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_ciphers HIGH:!aNULL:!MD5;
+  ssl_prefer_server_ciphers on;
+  add_header Strict-Transport-Security "max-age=31536000" always;
+
+  client_max_body_size 200m;
+
+  location / {
+    proxy_pass http://opal_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_read_timeout 300s;
+  }
+}
+```
+
+### 4) Issue the certificate
+- Ensure DNS resolves `opal.example.org` to your server and port 80 is reachable.
+- Start Nginx (and base services):
+
+```bash
+cd opal-live
+docker compose up -d nginx
+```
+
+- Request the certificate using the webroot method:
+
+```bash
+docker compose run --rm certbot certonly \
+  --webroot -w /var/www/certbot \
+  -d ${SERVER_NAME} \
+  --email ${EMAIL} --agree-tos --no-eff-email
+```
+
+- Reload Nginx to pick up the new certs:
+
+```bash
+docker compose exec nginx nginx -s reload
+```
+
+- Bring up the rest (if not already):
+
+```bash
+docker compose up -d
+```
+
+Visit `https://opal.example.org` and log in as `administrator` with the password from `.env`.
+
+### 5) Automatic renewal
+Let’s Encrypt certs expire every ~90 days. Renew periodically and reload Nginx.
+
+```bash
+# Try a dry run first
+docker compose run --rm certbot renew --dry-run -w /var/www/certbot
+
+# Example cron (host): renew daily at 03:00 and reload nginx
+# crontab -e
+0 3 * * * cd /path/to/opal-live && docker compose run --rm certbot renew -w /var/www/certbot && docker compose exec nginx nginx -s reload >> certbot-renew.log 2>&1
+```
+
+If port 80 cannot be opened, consider DNS-01 challenges (requires DNS provider API integration) instead of HTTP-01.
+
+### 6) Verify from R (public TLS)
+Now that you have a valid certificate, you do not need to disable TLS verification.
+
+```r
+# install.packages(c("DSI", "DSOpal"))
+library(DSI)
+library(DSOpal)
+
+b <- DSI::newDSLoginBuilder()
+b$append(
+  server   = "live",
+  url      = "https://opal.example.org",
+  user     = "administrator",
+  password = Sys.getenv("OPAL_PWD"),
+  driver   = "Opal"
+)
+logins <- b$build()
+conns <- DSI::datashield.login(logins)
+
+DSI::datashield.pkg_status(conns)
+DSI::datashield.logout(conns)
+```
+
+### Architecture (public)
+```{mermaid}
+graph LR
+  U["User<br/>https://opal.example.org"] -->|DNS resolves| N["Nginx (80/443)"]
+  N -->|proxy https->http| O["Opal (8080)"]
+  subgraph "docker network: opalnet"
+    O -->|R/DataSHIELD| R["Rock (8085)"]
+    O -->|Data storage| MSQL["MySQL (3306)"]
+    O -->|Auxiliary| MONGO["MongoDB (27017)"]
+  end
+  ACME["Certbot webroot<br/>/.well-known/acme-challenge/"] -.->|HTTP-01| N
+```
+
+### Troubleshooting & hardening
+- DNS propagation can take time. Check: `dig +short opal.example.org` resolves to your IP.
+- Ensure 80/443 reach your host (cloud SG, ufw, on-prem firewall). Test: `curl -I http://opal.example.org/.well-known/acme-challenge/test` (should hit Nginx).
+- Permissions: `letsencrypt/` must be writable by the `certbot` container (mapped volume).
+- Set strong TLS only (we used TLS1.2/1.3 and HIGH ciphers) and enable HSTS.
+- Consider limiting Nginx request sizes, enabling access logs, and fail2ban/WAF if exposed to the internet.
+- Update Opal `APP_URL` and `CSRF_ALLOWED` for your domain (already in compose).
+
+References:
+- Opal Docker image and configuration: [Installation — Docker Image](https://opaldoc.obiba.org/en/latest/admin/installation.html), [Configuration](https://opaldoc.obiba.org/en/latest/admin/configuration.html)
+- Nginx/Certbot flow: [DigitalOcean — Secure Nginx with Let’s Encrypt (Ubuntu)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04)
+- Templates inspiration: [`docker-compose.yml.tpl`](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl), [`nginx.conf.tpl`](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/nginx.conf.tpl) — see also [`src/commands`](https://github.com/isglobal-brge/easy-opal/tree/main/src/commands)
