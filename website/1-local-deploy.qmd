@@ -4,12 +4,21 @@ format: html
 engine: knitr
 ---
 
-```{css}
-#| echo: false
-p {
-  text-align: justify
+<style>
+.slide-deck {
+    border: 3px solid #dee2e6;
+    width: 100%;
+    height: 475px;
 }
+</style>
+
+<div>
+```{=html}
+
+<iframe class="slide-deck" src="slides_local_deploy/index.html"></iframe>
 ```
+</div>
+
 
 ### Why start with local deployment?
 - Local keeps friction low: no DNS, firewalls, or cloud costs. You can validate the stack in minutes on any laptop.
@@ -23,11 +32,15 @@ p {
 graph LR
   B["Browser<br/>https://localhost"] -->|80/443| N["Nginx reverse proxy"]
   N -->|proxy https->http| O["Opal (8080)"]
-  subgraph "docker network: opalnet"
+  subgraph Profiles["docker network: opalnet"]
     O -->|R/DataSHIELD| R["Rock (8085)"]
     O -->|Data storage| MSQL["MySQL (3306)"]
     O -->|Auxiliary| MONGO["MongoDB (27017)"]
   end
+
+  %% Define a lighter background for the subgraph
+  classDef light fill:#f9f9f9,stroke:#aaa,stroke-width:1px;
+  class Profiles light;
 ```
 
 ### Services and roles
@@ -111,37 +124,20 @@ services:
       - MYSQLDATA_USER=${MYSQLDATA_USER}
       - MYSQLDATA_PASSWORD=${MYSQLDATA_PASSWORD}
       - ROCK_HOSTS=rock:8085
-      - APP_URL=https://localhost
-      - CSRF_ALLOWED=localhost,127.0.0.1
+      - CSRF_ALLOWED: "*" ## Needed for localhost to work!
     volumes:
-      - opal_srv:/srv
-    networks:
-      - opalnet
-
-  rock:
-    image: obiba/rock:latest
-    networks:
-      - opalnet
-
+      - /some/path/opal:/srv
   mongo:
     image: mongo:6.0
-    command: ["mongod", "--bind_ip_all"]
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - opalnet
-
   mysqldata:
-    image: mysql:8
+    image: mysql
     environment:
       - MYSQL_DATABASE=${MYSQLDATA_DATABASE}
       - MYSQL_USER=${MYSQLDATA_USER}
       - MYSQL_PASSWORD=${MYSQLDATA_PASSWORD}
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - opalnet
+  rock:
+    image: obiba/rock:latest
 
   nginx:
     image: nginx:alpine
