@@ -81,6 +81,10 @@ OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
 
 - `OPAL_ADMINISTRATOR_PASSWORD` is required on first start of `obiba/opal`.
 
+::: {.callout-note}
+**Production note**: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform's native secrets management system. We use a `.env` file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files for reproducibility.
+:::
+
 ### 2) docker-compose.yml
 Defines Opal, Rock, and MongoDB. Key env vars match Opal docs (MONGO_*, ROCK_HOSTS) [opaldoc installation](https://opaldoc.obiba.org/en/latest/admin/installation.html).
 

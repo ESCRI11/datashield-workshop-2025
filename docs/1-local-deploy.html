@@ -325,6 +325,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li><code>OPAL_ADMINISTRATOR_PASSWORD</code> is required on first start of <code>obiba/opal</code>.</li>
 </ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Production note</strong>: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform’s native secrets management system. We use a <code>.env</code> file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files for reproducibility.</p>
+</div>
+</div>
 </section>
 <section id="docker-compose.yml" class="level3">
 <h3 class="anchored" data-anchor-id="docker-compose.yml">2) docker-compose.yml</h3>
