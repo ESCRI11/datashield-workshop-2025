@@ -24,7 +24,7 @@
     "href": "env_setup.html#prerequisites",
     "title": "Environment Setup",
     "section": "",
-    "text": "Operating System\n\nWindows Users: Ensure you have WSL2 installed. This allows you to run a Linux environment directly on Windows, which is necessary for Docker.\nMac and Linux Users: You are good to go with your native terminal.\n\n\n\nSoftware Requirements\n\nDocker (Engine) with Docker Compose v2 enabled\n\nWindows/macOS: Docker Desktop bundles Compose v2.\nLinux: Install the Compose plugin if not already present.\n\nGit\n\nUsed for cloning workshop repositories and version control\nDownload from git-scm.com\nAlternative: GitHub Desktop for a graphical interface\nVerify installation: git --version\n\nTerminal or shell (PowerShell, Windows Terminal, macOS Terminal, Linux shell)\nText Editor/IDE: VS Code, Sublime, Vim, or similar.\nR (&gt;= 4.2) and RStudio Desktop (optional but recommended for client-side checks)\n\n\n\nHardware requirements\n\nAt least 4 CPU cores and 8 GB RAM recommended (4 GB minimum)\n10+ GB free disk space for images, containers, and volumes\n\n\n\nNetwork and permissions\n\nAdministrative rights to install software\nUnrestricted internet access to docker.io, ghcr.io and GitHub\nVPN/proxy configured for Docker if required by your organization\nVirtualization enabled in BIOS/UEFI (Intel VT-x/AMD-V or Apple virtualization)",
+    "text": "Operating System\n\nWindows Users: Ensure you have WSL2 installed. This allows you to run a Linux environment directly on Windows, which is necessary for Docker.\nMac and Linux Users: You are good to go with your native terminal.\nReference System: This workshop material has been tested on Ubuntu 24.04.3 LTS\n\n\n\nSoftware Requirements\n\nDocker Engine (&gt;= 28.3.3) with Docker Compose\n\nWindows/macOS: Docker Desktop bundles Docker Compose.\nLinux: Install Docker Engine and Docker Compose separately.\nRequired version: Docker Compose v2.39.2 or later\n\nGit (&gt;= 2.43.0)\n\nUsed for cloning workshop repositories and version control\nDownload from git-scm.com\nAlternative: GitHub Desktop for a graphical interface\nVerify installation: git --version\n\nTerminal or shell (PowerShell, Windows Terminal, macOS Terminal, Linux shell)\nText Editor/IDE: VS Code, Sublime, Vim, or similar.\nR (&gt;= 4.3.3) and RStudio Desktop (optional but recommended for client-side checks)\n\n\n\nHardware requirements\n\nAt least 4 CPU cores and 8 GB RAM recommended (4 GB minimum)\n10+ GB free disk space for images, containers, and volumes\n\n\n\nNetwork and permissions\n\nAdministrative rights to install software\nUnrestricted internet access to docker.io, ghcr.io and GitHub\nVPN/proxy configured for Docker if required by your organization\nVirtualization enabled in BIOS/UEFI (Intel VT-x/AMD-V or Apple virtualization)",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
     ]
@@ -34,7 +34,7 @@
     "href": "env_setup.html#install-docker",
     "title": "Environment Setup",
     "section": "Install Docker",
-    "text": "Install Docker\n\nWindows (WSL2)\n\nInstall and enable WSL2: Microsoft guide\nInstall Docker Desktop: Docker Desktop for Windows\nIn Docker Desktop settings, enable “Use the WSL 2 based engine” and integration with your WSL distro\n\n\n\nmacOS\n\nInstall Docker Desktop: Docker Desktop for Mac\n\n\n\nLinux\n\nInstall Docker Engine following the official docs: Install Docker Engine\nEnsure the Docker Compose v2 plugin is installed: Compose plugin\n\n\nLinux post-install (non-root usage)\n# Add your user to the docker group and activate it\nsudo usermod -aG docker $USER\n# Restart your terminal to activate the changes",
+    "text": "Install Docker\n\nWindows (WSL2)\n\nInstall and enable WSL2: Microsoft guide\nInstall Docker Desktop: Docker Desktop for Windows\nIn Docker Desktop settings, enable “Use the WSL 2 based engine” and integration with your WSL distro\n\n\n\nmacOS\n\nInstall Docker Desktop: Docker Desktop for Mac\n\n\n\nLinux\n\nInstall Docker Engine following the official docs: Install Docker Engine\nInstall Docker Compose (standalone): Install Docker Compose\n\n\nLinux post-install (non-root usage)\n# Add your user to the docker group and activate it\nsudo usermod -aG docker $USER\n# Restart your terminal to activate the changes",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
     ]
@@ -44,7 +44,7 @@
     "href": "env_setup.html#verify-your-setup",
     "title": "Environment Setup",
     "section": "Verify your setup",
-    "text": "Verify your setup\nRun the following commands. All should succeed without errors.\ndocker --version\ndocker compose version\ndocker run --rm hello-world",
+    "text": "Verify your setup\nRun the following commands. All should succeed without errors.\ndocker --version\ndocker-compose --version\ndocker run --rm hello-world\n\nExpected output (or newer versions):\nDocker version 28.3.3, build 980b856 Docker Compose version v2.39.2-desktop.1\n\nExpected output (or newer versions):\nDocker version 28.3.3, build 980b856\nDocker Compose version v2.39.2-desktop.1",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
     ]
@@ -54,7 +54,7 @@
     "href": "env_setup.html#additional-notes",
     "title": "Environment Setup",
     "section": "Additional Notes",
-    "text": "Additional Notes\n\nEnsure your Docker engine is allocated with sufficient memory (at least 4GB; 8GB recommended) to avoid performance issues.\nClose applications using typical service ports you plan to map (e.g., 8080, 8443) to avoid conflicts.\nOn corporate networks, confirm Docker can pull images from public registries.\nFamiliarize yourself with basic Docker commands and operations, as we will be interacting with the console during the workshop.",
+    "text": "Additional Notes\n\nEnsure your Docker engine is allocated with sufficient memory (at least 4GB; 8GB recommended) to avoid performance issues.\nClose applications using typical service ports you plan to map (e.g., 8080, 8443) to avoid conflicts.\nOn corporate networks, confirm Docker can pull images from public registries.\nFamiliarize yourself with basic Docker commands and docker-compose operations, as we will be interacting with the console during the workshop.\nImportant: We use docker-compose (with hyphen) throughout this workshop, not docker compose (space-separated).",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
     ]

@@ -251,17 +251,19 @@ p {
 <ul>
 <li><strong>Windows Users</strong>: Ensure you have <a href="https://docs.microsoft.com/en-us/windows/wsl/install">WSL2</a> installed. This allows you to run a Linux environment directly on Windows, which is necessary for Docker.</li>
 <li><strong>Mac and Linux Users</strong>: You are good to go with your native terminal.</li>
+<li><strong>Reference System</strong>: This workshop material has been tested on Ubuntu 24.04.3 LTS</li>
 </ul>
 </section>
 <section id="software-requirements" class="level3">
 <h3 class="anchored" data-anchor-id="software-requirements">Software Requirements</h3>
 <ol type="1">
-<li><strong>Docker (Engine) with Docker Compose v2 enabled</strong>
+<li><strong>Docker Engine (&gt;= 28.3.3) with Docker Compose</strong>
 <ul>
-<li>Windows/macOS: Docker Desktop bundles Compose v2.</li>
-<li>Linux: Install the Compose plugin if not already present.</li>
+<li>Windows/macOS: Docker Desktop bundles Docker Compose.</li>
+<li>Linux: Install Docker Engine and Docker Compose separately.</li>
+<li>Required version: Docker Compose v2.39.2 or later</li>
 </ul></li>
-<li><strong>Git</strong>
+<li><strong>Git (&gt;= 2.43.0)</strong>
 <ul>
 <li>Used for cloning workshop repositories and version control</li>
 <li>Download from <a href="https://git-scm.com/downloads">git-scm.com</a></li>
@@ -270,7 +272,7 @@ p {
 </ul></li>
 <li><strong>Terminal or shell</strong> (PowerShell, Windows Terminal, macOS Terminal, Linux shell)</li>
 <li><strong>Text Editor/IDE</strong>: VS Code, Sublime, Vim, or similar.</li>
-<li><strong>R (&gt;= 4.2) and RStudio Desktop</strong> (optional but recommended for client-side checks)</li>
+<li><strong>R (&gt;= 4.3.3) and RStudio Desktop</strong> (optional but recommended for client-side checks)</li>
 </ol>
 </section>
 <section id="hardware-requirements" class="level3">
@@ -310,7 +312,7 @@ p {
 <h3 class="anchored" data-anchor-id="linux">Linux</h3>
 <ul>
 <li>Install Docker Engine following the official docs: <a href="https://docs.docker.com/engine/install/">Install Docker Engine</a></li>
-<li>Ensure the Docker Compose v2 plugin is installed: <a href="https://docs.docker.com/compose/install/linux/">Compose plugin</a></li>
+<li>Install Docker Compose (standalone): <a href="https://docs.docker.com/compose/install/standalone/">Install Docker Compose</a></li>
 </ul>
 <section id="linux-post-install-non-root-usage" class="level4">
 <h4 class="anchored" data-anchor-id="linux-post-install-non-root-usage">Linux post-install (non-root usage)</h4>
@@ -324,8 +326,15 @@ p {
 <h2 class="anchored" data-anchor-id="verify-your-setup">Verify your setup</h2>
 <p>Run the following commands. All should succeed without errors.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> <span class="at">--version</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose version</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> hello-world</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> <span class="at">--version</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> hello-world</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Expected</span> output <span class="er">(</span><span class="ex">or</span> newer versions<span class="kw">)</span><span class="bu">:</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Docker version 28.3.3, build 980b856 Docker Compose version v2.39.2-desktop.1</p>
+<pre><code></code></pre>
+<p>Expected output (or newer versions):</p>
+<pre><code>Docker version 28.3.3, build 980b856
+Docker Compose version v2.39.2-desktop.1</code></pre>
 </section>
 <section id="additional-notes" class="level2">
 <h2 class="anchored" data-anchor-id="additional-notes">Additional Notes</h2>
@@ -333,7 +342,8 @@ p {
 <li>Ensure your Docker engine is allocated with sufficient memory (at least 4GB; 8GB recommended) to avoid performance issues.</li>
 <li>Close applications using typical service ports you plan to map (e.g., 8080, 8443) to avoid conflicts.</li>
 <li>On corporate networks, confirm Docker can pull images from public registries.</li>
-<li>Familiarize yourself with basic Docker commands and operations, as we will be interacting with the console during the workshop.</li>
+<li>Familiarize yourself with basic Docker commands and <code>docker-compose</code> operations, as we will be interacting with the console during the workshop.</li>
+<li><strong>Important</strong>: We use <code>docker-compose</code> (with hyphen) throughout this workshop, not <code>docker compose</code> (space-separated).</li>
 </ul>
 </section>
 <section id="learn-docker-quick-references" class="level2">
