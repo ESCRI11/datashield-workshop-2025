@@ -1,0 +1,4 @@
+project:
+  title: "index"
+  output-dir: ../../docs/slides_local_deploy/
+
