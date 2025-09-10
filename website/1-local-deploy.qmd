@@ -22,19 +22,17 @@ engine: knitr
 
 ### Why start with local deployment?
 - Local keeps friction low: no DNS, firewalls, or cloud costs. You can validate the stack in minutes on any laptop.
-- Safe sandbox: use self‑signed TLS and avoid exposing services to the internet while you explore features.
+- Safe sandbox: use HTTP and avoid exposing services to the internet while you explore features.
 - Developer‑friendly: iterate on DataSHIELD code and packages against a predictable, reproducible environment.
-- Portable: the same Compose foundation scales up later (add DNS, Let’s Encrypt, and hardening without changing core services).
-- Teaching aid: a contained lab to learn Opal, Rock, and reverse proxying with Nginx.
+- Portable: the same Compose foundation scales up later (add DNS, TLS, and hardening without changing core services).
+- Teaching aid: a contained lab to learn Opal and Rock.
 
 ### Architecture at a glance
 ```{mermaid}
 graph LR
-  B["Browser<br/>https://localhost"] -->|80/443| N["Nginx reverse proxy"]
-  N -->|proxy https->http| O["Opal (8080)"]
+  B["Browser<br/>http://localhost:8080"] -->|8080| O["Opal (8080)"]
   subgraph Profiles["docker network: opalnet"]
     O -->|R/DataSHIELD| R["Rock (8085)"]
-    O -->|Data storage| MSQL["MySQL (3306)"]
     O -->|Auxiliary| MONGO["MongoDB (27017)"]
   end
 
@@ -44,35 +42,26 @@ graph LR
 ```
 
 ### Services and roles
-- Nginx (reverse proxy):
-  - Terminates TLS locally (self‑signed cert) and proxies to Opal over the internal Docker network.
-  - Handles 80→443 redirect and forwards client headers (`X-Forwarded-*`).
-  - Mirrors the approach used in production (swap self‑signed for Let’s Encrypt later).
 - Opal (OBiBa):
-  - Main DataSHIELD server and admin UI. Exposes HTTP on 8080 inside the network.
-  - Reads configuration via environment variables (e.g., `OPAL_ADMINISTRATOR_PASSWORD`, `MONGO_*`, `MYSQLDATA_*`, `ROCK_HOSTS`, `APP_URL`) [docs](https://opaldoc.obiba.org/en/latest/admin/installation.html) [docs](https://opaldoc.obiba.org/en/latest/admin/configuration.html).
-  - `APP_URL=https://localhost` helps Opal generate correct public links behind Nginx; `CSRF_ALLOWED=localhost,127.0.0.1` eases local UI/API calls.
+  - Main DataSHIELD server and admin UI. Exposes HTTP on 8080.
+  - Reads configuration via environment variables (e.g., `OPAL_ADMINISTRATOR_PASSWORD`, `MONGO_*`, `ROCK_HOSTS`) [docs](https://opaldoc.obiba.org/en/latest/admin/installation.html) [docs](https://opaldoc.obiba.org/en/latest/admin/configuration.html).
 - Rock (R server):
   - Executes R/DataSHIELD calls initiated by Opal, reachable as `rock:8085` on the Docker network.
   - Ships with DataSHIELD packages; ideal for quick connectivity checks.
-- MySQL (data store):
-  - Backing store for Opal’s data; credentials seeded via `MYSQLDATA_*` and passed into Opal.
-  - Persisted with a named volume, so restarts don’t lose state.
 - MongoDB (auxiliary store):
   - Used by Opal for auxiliary features; we pin to `mongo:6.0` per Opal guidance.
 
 ### Goal
-Deploy Opal locally on your laptop using Docker Compose, fronted by Nginx with self‑signed TLS. This lets you try DataSHIELD quickly without DNS or cloud setup and is perfect for package development and smoke tests. See the prerequisites in `@env_setup.qmd` and the scope in `@up_2_speed.qmd`.
+Deploy Opal locally on your laptop using Docker Compose. This lets you try DataSHIELD quickly without DNS or cloud setup and is perfect for package development and smoke tests. See the prerequisites in `@env_setup.qmd` and the scope in `@up_2_speed.qmd`.
 
 ### What we will deploy
 - Opal server (`obiba/opal:latest`) with admin password set
-- Rock R server (`obiba/rock:latest`) for DataSHIELD execution
-- MySQL for data storage and MongoDB for auxiliary storage
-- Nginx reverse proxy on 80/443 with a self‑signed certificate for `https://localhost`
+- Rock R server (`datashield/rock-base:latest`) for DataSHIELD execution
+- MongoDB for auxiliary storage
 
 References:
 - Opal Docker image + env vars: [Installation — Docker Image](https://opaldoc.obiba.org/en/latest/admin/installation.html) and [Configuration](https://opaldoc.obiba.org/en/latest/admin/configuration.html)
-- Templates adapted from: `easy-opal` compose template and Nginx template ([docker-compose.yml.tpl](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl), [nginx.conf.tpl](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/nginx.conf.tpl)); see also helper commands ([src/commands](https://github.com/isglobal-brge/easy-opal/tree/main/src/commands))
+- Templates adapted from: `easy-opal` compose template ([docker-compose.yml.tpl](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl)); see also helper commands ([src/commands](https://github.com/isglobal-brge/easy-opal/tree/main/src/commands))
 
 ### Files layout
 Use this folder layout:
@@ -81,12 +70,6 @@ Use this folder layout:
 opal-local/
 ├── .env
 ├── docker-compose.yml
-└── nginx/
-    ├── nginx.conf
-    └── certs/
-        ├── localhost.crt
-        ├── localhost.key
-        └── dhparam.pem   (optional)
 ```
 
 ### 1) Create a `.env` file
@@ -94,67 +77,42 @@ Keep secrets out of the compose file.
 
 ```
 OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
-MYSQLDATA_DATABASE=opal_data
-MYSQLDATA_USER=opal
-MYSQLDATA_PASSWORD=opalpass
 ```
 
 - `OPAL_ADMINISTRATOR_PASSWORD` is required on first start of `obiba/opal`.
-- DB values are consumed by both MySQL and Opal (via `MYSQLDATA_*`).
 
 ### 2) docker-compose.yml
-Defines Opal, Rock, MySQL, MongoDB, and Nginx. Key env vars match Opal docs (MONGO_*, MYSQLDATA_*, ROCK_HOSTS, APP_URL, CSRF_ALLOWED) [opaldoc installation](https://opaldoc.obiba.org/en/latest/admin/installation.html).
+Defines Opal, Rock, and MongoDB. Key env vars match Opal docs (MONGO_*, ROCK_HOSTS) [opaldoc installation](https://opaldoc.obiba.org/en/latest/admin/installation.html).
 
 ```yaml
-version: "3.9"
-
 services:
   opal:
     image: obiba/opal:latest
     depends_on:
       - rock
       - mongo
-      - mysqldata
+    ports:
+      - "8080:8080"
+      - "8443:8443"
     environment:
       - OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
-      - MYSQLDATA_HOST=mysqldata
-      - MYSQLDATA_DATABASE=${MYSQLDATA_DATABASE}
-      - MYSQLDATA_USER=${MYSQLDATA_USER}
-      - MYSQLDATA_PASSWORD=${MYSQLDATA_PASSWORD}
       - ROCK_HOSTS=rock:8085
-      - CSRF_ALLOWED: "*" ## Needed for localhost to work!
     volumes:
-      - /some/path/opal:/srv
+      - opal_srv:/srv
   mongo:
     image: mongo:6.0
-  mysqldata:
-    image: mysql
-    environment:
-      - MYSQL_DATABASE=${MYSQLDATA_DATABASE}
-      - MYSQL_USER=${MYSQLDATA_USER}
-      - MYSQL_PASSWORD=${MYSQLDATA_PASSWORD}
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-  rock:
-    image: obiba/rock:latest
-
-  nginx:
-    image: nginx:alpine
-    depends_on:
-      - opal
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
-    networks:
-      - opalnet
+      - mongo_data:/data/db
+
+  rock:
+    image: datashield/rock-base:latest
+    environment:
+    - ROCK_ID=new-stack-rock
 
 volumes:
   opal_srv:
-  mysql_data:
   mongo_data:
 
 networks:
@@ -162,72 +120,11 @@ networks:
 ```
 
 Highlights:
-- Opal sees Rock at `rock:8085` and DBs via service names on the internal network.
-- We do NOT publish Opal directly; only Nginx exposes 80/443.
-- `APP_URL=https://localhost` helps Opal produce correct links behind the proxy.
+- Opal sees Rock at `rock:8085` and MongoDB via service names on the internal network.
+- Opal is directly accessible on port 8080 for simplicity.
+- All services run on the `opalnet` Docker network.
 
-### 3) nginx/nginx.conf
-Simple TLS termination and reverse proxy to Opal’s internal port `8080`. Based on the `easy-opal` template but simplified for local use.
-
-```nginx
-upstream opal_upstream {
-  server opal:8080;
-  keepalive 16;
-}
-
-server {
-  listen 80;
-  server_name localhost 127.0.0.1;
-  return 301 https://$host$request_uri;
-}
-
-server {
-  listen 443 ssl http2;
-  server_name localhost 127.0.0.1;
-
-  ssl_certificate     /etc/nginx/certs/localhost.crt;
-  ssl_certificate_key /etc/nginx/certs/localhost.key;
-  ssl_session_timeout 1d;
-  ssl_session_cache shared:SSL:10m;
-  ssl_protocols TLSv1.2 TLSv1.3;
-  ssl_ciphers HIGH:!aNULL:!MD5;
-  ssl_prefer_server_ciphers on;
-
-  # Optional strong DH params if generated
-  ssl_dhparam /etc/nginx/certs/dhparam.pem;
-
-  add_header Strict-Transport-Security "max-age=31536000" always;
-
-  client_max_body_size 200m;
-
-  location / {
-    proxy_pass http://opal_upstream;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto https;
-    proxy_read_timeout 300s;
-  }
-}
-```
-
-### 4) Generate a self‑signed certificate
-For local only. Your browser/R client will need to accept the certificate.
-
-```bash
-mkdir -p nginx/certs
-openssl req -x509 -nodes -newkey rsa:4096 -days 365 \
-  -keyout nginx/certs/localhost.key \
-  -out nginx/certs/localhost.crt \
-  -subj "/CN=localhost"
-# Optional but recommended for stronger TLS
-openssl dhparam -out nginx/certs/dhparam.pem 2048
-```
-
-Tip: You can also use `mkcert` for a locally trusted cert.
-
-### 5) Bring it up
+### 3) Bring it up
 From the directory containing `docker-compose.yml` and `.env`:
 
 ```bash
@@ -239,51 +136,46 @@ docker compose ps
 docker compose logs -f opal | cat
 ```
 
-- Open `https://localhost` and accept the self‑signed certificate warning.
+- Open `http://localhost:8080` in your browser.
 - Login with user `administrator` and the password you set in `.env`.
 
 If you see the Opal UI and can navigate the Admin area, your stack is running.
 
-### 6) Minimal DataSHIELD test (R)
-Verify connectivity via DSOpal/DSI. Because we are using a self‑signed certificate, disable certificate verification for this localhost test only.
+### 4) Minimal DataSHIELD test (R)
+Verify connectivity via DSOpal/DSI.
 
 ```r
-# install.packages(c("DSI", "DSOpal"))
 library(DSI)
 library(DSOpal)
+library(httr)
+set_config(config(ssl_verifyhost = 0L, ssl_verifypeer = 0L))
+library(dsBaseClient)
 
-# Provide the admin password via environment for convenience
-# Sys.setenv(OPAL_PWD = "ChangeMe123!")
 
 b <- DSI::newDSLoginBuilder()
 b$append(
-  server   = "local",
-  url      = "https://localhost",
-  user     = "administrator",
-  password = Sys.getenv("OPAL_PWD"),
-  driver   = "Opal",
-  options  = list(ssl_verifyhost = 0, ssl_verifypeer = 0)
+    server   = "local",
+    url      = "http://localhost:8080",
+    user     = "administrator",
+    password = "ChangeMe123!",
+    profile = "default"
 )
+
 logins <- b$build()
 conns <- DSI::datashield.login(logins)
-
-# Quick sanity checks
-DSI::datashield.pkg_status(conns)       # expect packages list/status
-DSI::datashield.symbols(conns)          # should return an empty list initially
-
-DSI::datashield.logout(conns)
+ds.ls()
 ```
 
 Notes:
 - The Opal + Rock images are DataSHIELD‑ready by design. If a package appears missing, ensure Rock pulled the latest image or install required packages in Rock.
-- For real deployments, do not disable TLS verification; use a valid certificate and omit the `options` overrides.
+- For real deployments, use HTTPS with proper certificates and omit the SSL verification overrides.
 
 ### Troubleshooting
-- Opal not reachable: check `nginx` logs; confirm port 443 is not in use locally.
-- 502/504 at Nginx: ensure `opal` container is running and healthy; check `docker compose logs opal`.
+- Opal not reachable: check if port 8080 is available locally.
 - Login fails: ensure `OPAL_ADMINISTRATOR_PASSWORD` was set at first start; to reset, stop containers, remove `opal_srv` volume, and start again.
 - Mongo version: Opal expects MongoDB ≤ 6.0; using `mongo:6.0` matches docs.
+- Rock connection issues: check that Rock container is running and healthy.
 
 ### Next steps
-When ready to go live, switch to DNS + Let’s Encrypt and harden the proxy, as we’ll cover in the later section. For now, you have a working local Opal + DataSHIELD lab.
+When ready to go live, add Nginx reverse proxy with TLS, DNS configuration, and hardening as we'll cover in the later section. For now, you have a working local Opal + DataSHIELD lab.
 
