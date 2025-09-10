@@ -19,20 +19,22 @@ Welcome to the workshop on deploying Opal and Molgenis Armadillo infrastructure 
 
 - **Windows Users**: Ensure you have [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) installed. This allows you to run a Linux environment directly on Windows, which is necessary for Docker.
 - **Mac and Linux Users**: You are good to go with your native terminal.
+- **Reference System**: This workshop material has been tested on Ubuntu 24.04.3 LTS
 
 ### Software Requirements
 
-1. **Docker (Engine) with Docker Compose v2 enabled**
-   - Windows/macOS: Docker Desktop bundles Compose v2.
-   - Linux: Install the Compose plugin if not already present.
-2. **Git**
+1. **Docker Engine (>= 28.3.3) with Docker Compose**
+   - Windows/macOS: Docker Desktop bundles Docker Compose.
+   - Linux: Install Docker Engine and Docker Compose separately.
+   - Required version: Docker Compose v2.39.2 or later
+2. **Git (>= 2.43.0)**
    - Used for cloning workshop repositories and version control
    - Download from [git-scm.com](https://git-scm.com/downloads)
    - Alternative: [GitHub Desktop](https://desktop.github.com/) for a graphical interface
    - Verify installation: `git --version`
 3. **Terminal or shell** (PowerShell, Windows Terminal, macOS Terminal, Linux shell)
 4. **Text Editor/IDE**: VS Code, Sublime, Vim, or similar.
-5. **R (>= 4.2) and RStudio Desktop** (optional but recommended for client-side checks)
+5. **R (>= 4.3.3) and RStudio Desktop** (optional but recommended for client-side checks)
 
 ### Hardware requirements
 
@@ -61,7 +63,7 @@ Welcome to the workshop on deploying Opal and Molgenis Armadillo infrastructure 
 ### Linux
 
 - Install Docker Engine following the official docs: [Install Docker Engine](https://docs.docker.com/engine/install/)
-- Ensure the Docker Compose v2 plugin is installed: [Compose plugin](https://docs.docker.com/compose/install/linux/)
+- Install Docker Compose (standalone): [Install Docker Compose](https://docs.docker.com/compose/install/standalone/)
 
 #### Linux post-install (non-root usage)
 
@@ -77,8 +79,20 @@ Run the following commands. All should succeed without errors.
 
 ```bash
 docker --version
-docker compose version
+docker-compose --version
 docker run --rm hello-world
+
+Expected output (or newer versions):
+```
+Docker version 28.3.3, build 980b856
+Docker Compose version v2.39.2-desktop.1
+```
+```
+
+Expected output (or newer versions):
+```
+Docker version 28.3.3, build 980b856
+Docker Compose version v2.39.2-desktop.1
 ```
 
 ## Additional Notes
@@ -86,7 +100,8 @@ docker run --rm hello-world
 - Ensure your Docker engine is allocated with sufficient memory (at least 4GB; 8GB recommended) to avoid performance issues.
 - Close applications using typical service ports you plan to map (e.g., 8080, 8443) to avoid conflicts.
 - On corporate networks, confirm Docker can pull images from public registries.
-- Familiarize yourself with basic Docker commands and operations, as we will be interacting with the console during the workshop.
+- Familiarize yourself with basic Docker commands and `docker-compose` operations, as we will be interacting with the console during the workshop.
+- **Important**: We use `docker-compose` (with hyphen) throughout this workshop, not `docker compose` (space-separated).
 
 ## Learn Docker: quick references
 
