@@ -261,12 +261,16 @@ DSI::datashield.logout(conns)
 graph LR
   U["User<br/>https://opal.example.org"] -->|DNS resolves| N["Nginx (80/443)"]
   N -->|proxy https->http| O["Opal (8080)"]
-  subgraph "docker network: opalnet"
+  subgraph Profiles["docker network: opalnet"]
     O -->|R/DataSHIELD| R["Rock (8085)"]
     O -->|Data storage| MSQL["MySQL (3306)"]
     O -->|Auxiliary| MONGO["MongoDB (27017)"]
   end
   ACME["Certbot webroot<br/>/.well-known/acme-challenge/"] -.->|HTTP-01| N
+
+  %% Define a lighter background for the subgraph
+  classDef light fill:#f9f9f9,stroke:#aaa,stroke-width:1px;
+  class Profiles light;
 ```
 
 ### Troubleshooting & hardening

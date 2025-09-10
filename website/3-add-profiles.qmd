@@ -1,0 +1,521 @@
+---
+title: "3. Adding and managing profiles"
+format: html
+engine: knitr
+---
+
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
+### Goal
+Learn how to add new DataSHIELD profiles to your existing Opal deployment without losing data or secrets. Profiles allow you to organize different sets of DataSHIELD packages and configurations for different research contexts or user groups.
+
+### What are profiles?
+Profiles in Opal/DataSHIELD context are named configurations that can include:
+- Specific sets of DataSHIELD packages
+- Different R package versions
+- Custom package repositories
+- Environment-specific configurations
+- User access controls
+
+Think of profiles as isolated environments within your Opal deployment, similar to Python virtual environments or Docker containers, but for DataSHIELD research contexts.
+
+### Prerequisites
+- Working Opal deployment (either local from section 1 or production from section 2)
+- Admin access to your Opal instance
+- Basic understanding of Docker Compose
+
+### Common use cases for profiles
+- **Research-specific environments**: Different studies requiring different package versions
+- **Development vs. production**: Testing new packages before deploying to live research
+- **User group separation**: Different access levels or package sets for different researchers
+- **Package version management**: Maintaining stable versions while testing updates
+
+### Architecture with profiles
+```{mermaid}
+graph TB
+  N["Nginx Proxy"] --> O["Opal Server"]
+  O --> R1["Rock Profile: default<br/>dsBase, dsStats"]
+  O --> R2["Rock Profile: genomics<br/>dsOmics, dsExposure"] 
+  O --> R3["Rock Profile: survival<br/>dsSurvival, dsStatsClient"]
+  subgraph Profiles["Profiles Configuration"]
+    R1 --> P1["Profile: default<br/>Port: 8085"]
+    R2 --> P2["Profile: genomics<br/>Port: 8085"] 
+    R3 --> P3["Profile: survival<br/>Port: 8085"]
+  end
+
+  %% Define a lighter background for the subgraph
+  classDef light fill:#f9f9f9,stroke:#aaa,stroke-width:1px;
+  class Profiles light;
+```
+
+### Planning your profile strategy
+
+Before adding profiles, plan your strategy:
+
+1. **Identify requirements**: What packages does each profile need?
+2. **Name consistently**: Use descriptive names (e.g., `genomics`, `survival`, `testing`)
+3. **Document dependencies**: Track which packages each profile requires
+4. **Plan resource allocation**: Each profile needs its own Rock instance
+
+### Method 1: Adding profiles to existing deployment
+
+#### 1) Update your .env file
+Add profile-specific configurations to your existing `.env`:
+
+```bash
+# Existing configuration
+OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
+MYSQLDATA_DATABASE=opal_data
+MYSQLDATA_USER=opal
+MYSQLDATA_PASSWORD=opalpass
+
+# Profile configuration (optional - for documentation)
+ROCK_PROFILES=genomics,survival
+```
+
+#### 2) Extend docker-compose.yml
+Add new Rock services for each profile. Here's an example adding genomics and survival profiles:
+
+```yaml
+version: "3.9"
+
+services:
+  opal:
+    image: obiba/opal:latest
+    depends_on:
+      - rock-default
+      - rock-genomics
+      - rock-survival
+      - mongo
+      - mysqldata
+    environment:
+      - OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MYSQLDATA_HOST=mysqldata
+      - MYSQLDATA_DATABASE=${MYSQLDATA_DATABASE}
+      - MYSQLDATA_USER=${MYSQLDATA_USER}
+      - MYSQLDATA_PASSWORD=${MYSQLDATA_PASSWORD}
+      # Multiple Rock hosts - comma separated
+      - ROCK_HOSTS=rock-default:8085,rock-genomics:8085,rock-survival:8085
+      - APP_URL=https://${SERVER_NAME:-localhost}
+      - CSRF_ALLOWED=${SERVER_NAME:-localhost,127.0.0.1}
+    volumes:
+      - opal_srv:/srv
+    networks:
+      - opalnet
+
+  # Default profile (existing)
+  rock-default:
+    image: obiba/rock:latest
+    container_name: rock-default
+    networks:
+      - opalnet
+    environment:
+      - ROCK_ID=default
+      - ROCK_CLUSTER=default
+
+  # New genomics profile
+  rock-genomics:
+    image: obiba/rock:latest
+    container_name: rock-genomics
+    networks:
+      - opalnet
+    environment:
+      - ROCK_ID=genomics
+      - ROCK_CLUSTER=genomics
+
+  # New survival analysis profile  
+  rock-survival:
+    image: obiba/rock:latest
+    container_name: rock-survival
+    networks:
+      - opalnet
+    environment:
+      - ROCK_ID=survival
+      - ROCK_CLUSTER=survival
+
+
+  # Existing services remain unchanged
+  mongo:
+    image: mongo:6.0
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - opalnet
+
+  mysqldata:
+    image: mysql:8
+    environment:
+      - MYSQL_DATABASE=${MYSQLDATA_DATABASE}
+      - MYSQL_USER=${MYSQLDATA_USER}
+      - MYSQL_PASSWORD=${MYSQLDATA_PASSWORD}
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - opalnet
+
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - opal
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro  # local only
+      # For production, use:
+      # - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # - ./certbot/www:/var/www/certbot:ro
+      # - ./letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - opalnet
+
+volumes:
+  opal_srv:
+  mysql_data:
+  mongo_data:
+
+networks:
+  opalnet:
+```
+
+#### 3) Graceful restart without data loss
+
+The key to restarting without losing data is to preserve the named volumes. Here's the safe restart procedure:
+
+```bash
+# 1. Stop only the application containers, keep data containers
+docker compose stop opal rock-default nginx
+
+# 2. Update your compose file and add new profiles
+# (Make your changes to docker-compose.yml)
+
+# 3. Start the new configuration
+docker compose up -d
+
+# 4. Verify all services are healthy
+docker compose ps
+docker compose logs -f opal | head -20
+```
+
+**Important**: Never run `docker compose down` as this removes the named volumes containing your data. Always use `docker compose stop` for graceful shutdowns.
+
+### Method 2: Understanding the raw tools and manual operations
+
+Understanding what files to modify and which commands to run gives you complete control over your profile management. Here's the step-by-step breakdown:
+
+#### Files you need to understand and modify
+
+**1. Directory structure** - Create the profile directories:
+```bash
+mkdir -p profiles/genomics
+mkdir -p profiles/survival
+```
+*Why*: Each profile needs its own directory to store configuration files (if needed for your specific setup).
+
+**2. Docker Compose modification** - Add new services to `docker-compose.yml`:
+```yaml
+  # Add this new service block
+  rock-genomics:
+    image: obiba/rock:latest
+    container_name: rock-genomics
+    networks:
+      - opalnet
+    environment:
+      - ROCK_ID=genomics
+      - ROCK_CLUSTER=genomics
+```
+*Why*: Each profile needs its own Rock container instance. The `ROCK_ID` identifies the profile to Opal.
+
+**3. Update Opal configuration** - Modify the `ROCK_HOSTS` environment variable in the `opal` service:
+```yaml
+environment:
+  # Change this line from:
+  - ROCK_HOSTS=rock-default:8085
+  # To this:
+  - ROCK_HOSTS=rock-default:8085,rock-genomics:8085,rock-survival:8085
+```
+*Why*: Opal needs to know about all available Rock instances. This comma-separated list tells Opal where to find each profile.
+
+#### Commands to run and what they do
+
+**1. Check current container status**:
+```bash
+docker compose ps
+```
+*What it does*: Shows you which containers are running, their status, and ports. Use this before making changes to understand your current state.
+
+**2. Stop specific services for updates**:
+```bash
+docker compose stop opal nginx
+```
+*What it does*: Gracefully stops only the Opal and Nginx containers while keeping data containers (MySQL, MongoDB) running. This preserves your data during configuration changes.
+
+**3. Apply configuration changes**:
+```bash
+docker compose up -d
+```
+*What it does*: Reads the updated `docker-compose.yml` file and starts any new services (like your new Rock profiles). The `-d` flag runs containers in the background.
+
+**4. Check logs for new services**:
+```bash
+docker compose logs -f rock-genomics
+```
+*What it does*: Shows real-time logs from the genomics Rock container. Watch for package installation progress and any errors. Use `Ctrl+C` to exit log viewing.
+
+**5. Verify Rock connectivity**:
+```bash
+docker compose exec opal curl -f http://rock-genomics:8085/
+```
+*What it does*: Tests network connectivity from inside the Opal container to your new Rock profile. Should return Rock server information if working correctly.
+
+**6. List all running services**:
+```bash
+docker compose ps --services
+```
+*What it does*: Lists all service names defined in your compose file, useful for verifying your new profiles are recognized.
+
+#### Manual profile removal process
+
+**1. Stop the specific Rock container**:
+```bash
+docker compose stop rock-genomics
+```
+*What it does*: Gracefully stops only the genomics profile container without affecting other services.
+
+**2. Remove the stopped container**:
+```bash
+docker compose rm rock-genomics
+```
+*What it does*: Removes the stopped container completely. The `-f` flag forces removal without confirmation.
+
+**3. Update configuration files**:
+- Remove the `rock-genomics` service block from `docker-compose.yml`
+- Remove `rock-genomics:8085` from the `ROCK_HOSTS` environment variable
+- Optionally remove the `profiles/genomics/` directory
+
+**4. Restart Opal to apply changes**:
+```bash
+docker compose restart opal
+```
+*What it does*: Restarts only the Opal service to reload the updated `ROCK_HOSTS` configuration.
+
+#### Understanding container networking
+
+**Why use internal hostnames**: In the Docker network, containers communicate using service names (`rock-genomics`) rather than localhost or external IPs. All Rock containers use the same internal port (8085) but are distinguished by their service names:
+- `rock-default:8085` (default DataSHIELD packages)  
+- `rock-genomics:8085` (genomics packages)
+- `rock-survival:8085` (survival analysis packages)
+
+**Service name distinction**: Each Rock profile uses the same port internally but has a unique service name for identification within the Docker network.
+
+#### Key configuration patterns
+
+**Environment variables in Rock containers**:
+- `ROCK_ID`: Unique identifier for this Rock instance
+- `ROCK_CLUSTER`: Cluster name (can group multiple Rock instances)
+
+**Volume mounting pattern**: Generally not needed for basic profile setup, but can be used to mount custom configuration files if required for specific use cases.
+
+### Configuring profiles in Opal UI
+
+After adding Rock services, configure them in the Opal web interface:
+
+1. **Access Opal Admin**: Navigate to `https://your-opal-domain/` and login as administrator
+
+2. **Go to DataSHIELD Configuration**: 
+   - Click on "Administration" in the top menu
+   - Select "DataSHIELD" from the left sidebar
+
+3. **Add Rock Servers**:
+   - Click "Add DataSHIELD Configuration" 
+   - Name: `genomics`
+   - URL: `http://rock-genomics:8086`
+   - Click "Save"
+
+4. **Assign Profiles to Projects**:
+   - Navigate to your project settings
+   - Under "DataSHIELD Configuration", select the appropriate profile
+   - Save changes
+
+### Testing your profiles
+
+Verify each profile works correctly:
+
+```r
+library(DSI)
+library(DSOpal)
+
+# Test genomics profile
+builder <- DSI::newDSLoginBuilder()
+builder$append(
+  server = "genomics",
+  url = "https://your-opal-domain",
+  user = "administrator", 
+  password = Sys.getenv("OPAL_PWD"),
+  driver = "Opal",
+  profile = "genomics"  # Specify the profile
+)
+
+logins <- builder$build()
+conns <- DSI::datashield.login(logins)
+
+# Check available packages
+DSI::datashield.pkg_status(conns)
+
+# Test profile-specific functionality
+# (depends on packages installed in that profile)
+
+DSI::datashield.logout(conns)
+```
+
+### Backup and restore strategies
+
+#### Backup your configuration
+```bash
+# Create backup directory
+mkdir -p backups/$(date +%Y%m%d)
+
+# Backup configuration files
+cp .env docker-compose.yml backups/$(date +%Y%m%d)/
+cp -r profiles/ backups/$(date +%Y%m%d)/
+cp -r nginx/ backups/$(date +%Y%m%d)/
+
+# Backup data volumes
+docker run --rm -v opal_srv:/data -v $(pwd)/backups/$(date +%Y%m%d):/backup alpine tar czf /backup/opal_srv.tar.gz -C /data .
+```
+
+#### Restore from backup
+```bash
+# Stop services
+docker compose stop
+
+# Restore configuration
+cp backups/20240315/.env .
+cp backups/20240315/docker-compose.yml .
+cp -r backups/20240315/profiles/ .
+
+# Restore data volume
+docker run --rm -v opal_srv:/data -v $(pwd)/backups/20240315:/backup alpine tar xzf /backup/opal_srv.tar.gz -C /data
+
+# Start services
+docker compose up -d
+```
+
+### Troubleshooting profiles
+
+#### Common issues and solutions
+
+**Profile not appearing in Opal UI**:
+- Check Rock container is running: `docker compose ps`
+- Verify ROCK_HOSTS includes all profiles
+- Check Rock container logs: `docker compose logs rock-genomics`
+
+**Connection timeouts**:
+- Check network connectivity between Opal and Rock containers
+- Verify port numbers match in ROCK_HOSTS and service definitions
+
+**Memory issues**:
+- Each Rock profile consumes additional memory
+- Monitor system resources: `docker stats`
+- Consider limiting the number of concurrent profiles
+
+#### Monitoring profile health
+
+Create a health check script:
+
+```bash
+#!/bin/bash
+# health-check.sh
+
+echo "Checking Opal deployment health..."
+
+# Check container status
+echo "Container Status:"
+docker compose ps
+
+# Check Rock connectivity
+for profile in default genomics survival; do
+    echo "Testing Rock profile: $profile"
+    curl -f http://localhost:808$(echo $profile | wc -c)/health || echo "  ❌ $profile unreachable"
+done
+
+# Check Opal API
+echo "Testing Opal API:"
+curl -f -k https://localhost/ws/projects || echo "  ❌ Opal API unreachable"
+
+echo "Health check complete"
+```
+
+### Best practices
+
+1. **Version control**: Store your configuration in Git
+   ```bash
+   git init
+   git add .env docker-compose.yml profiles/ nginx/
+   git commit -m "Initial Opal configuration with profiles"
+   ```
+
+2. **Environment separation**: Use different `.env` files for different environments
+   ```bash
+   cp .env .env.development
+   cp .env .env.production
+   ```
+
+3. **Resource management**: Monitor resource usage with profiles
+   ```bash
+   # Check memory usage
+   docker stats --no-stream
+   
+   # Check disk usage
+   docker system df
+   ```
+
+4. **Documentation**: Maintain a profiles registry
+   ```markdown
+   # profiles/README.md
+   ## Available Profiles
+   
+   - **default**: Standard DataSHIELD packages (dsBase, dsStats)
+   - **genomics**: Omics analysis (dsOmics, dsExposure) 
+   - **survival**: Survival analysis (dsSurvival)
+   ```
+
+5. **Testing**: Automate profile testing
+   ```bash
+   # test-profiles.R
+   test_profile <- function(profile_name) {
+     # Connection test code here
+     cat("Testing profile:", profile_name, "\n")
+   }
+   
+   for(profile in c("default", "genomics", "survival")) {
+     test_profile(profile)
+   }
+   ```
+
+### Next steps
+
+With profiles configured, you can:
+- Set up automated package updates per profile
+- Implement user-specific profile assignments
+- Create profile-specific data access controls
+- Monitor profile usage and performance
+- Scale profiles across multiple servers
+
+The profile system provides the foundation for a flexible, multi-tenant DataSHIELD deployment that can serve diverse research needs while maintaining data isolation and security.
+
+### References
+
+- Opal DataSHIELD configuration: [DataSHIELD Administration](https://opaldoc.obiba.org/en/latest/admin/datashield.html)
+- Docker Compose best practices: [Docker Compose Production](https://docs.docker.com/compose/production/)
+- Rock server documentation: [Rock Server](https://rockdoc.obiba.org/)
