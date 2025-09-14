@@ -39,7 +39,7 @@ Think of profiles as isolated R environments within your Opal deployment, simila
 ```{mermaid}
 graph TB
   B["Browser<br/>http://localhost:8080"] --> O["Opal Server (8080)"]
-  O --> R1["Rock Profile: default<br/>dsBase, dsStats"]
+  O --> R1["Rock Profile: default<br/>dsBase"]
   O --> R2["Rock Profile: genomics<br/>dsOmics, dsExposure"] 
   O --> R3["Rock Profile: survival<br/>dsSurvival"]
   subgraph Profiles["docker network: opalnet"]
@@ -71,7 +71,7 @@ OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
 ```
 
 ### Step 2: Extend docker-compose.yml with profiles
-Replace your `docker-compose.yml` from section 1 with this extended version that adds genomics and survival profiles:
+Replace your `docker-compose.yml` from section 1 with this extended version that adds a survival profile:
 
 ```yaml
 services:
@@ -79,7 +79,6 @@ services:
     image: obiba/opal:latest
     depends_on:
       - rock-default
-      - rock-genomics
       - rock-survival
       - mongo
     ports:
@@ -90,7 +89,7 @@ services:
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
       # Multiple Rock hosts - comma separated
-      - ROCK_HOSTS=rock-default:8085,rock-genomics:8085,rock-survival:8085
+      - ROCK_HOSTS=rock-default:8085,rock-survival:8085
     volumes:
       - opal_srv:/srv
     networks:
@@ -101,14 +100,6 @@ services:
     image: datashield/rock-base:latest
     environment:
       - ROCK_ID=default
-    networks:
-      - opalnet
-
-  # New genomics profile
-  rock-genomics:
-    image: datashield/rock-base:latest
-    environment:
-      - ROCK_ID=genomics
     networks:
       - opalnet
 
@@ -144,7 +135,6 @@ Let's break down what changed from the simple setup in section 1 and why:
 ```yaml
 depends_on:
   - rock-default
-  - rock-genomics  # NEW
   - rock-survival  # NEW
   - mongo
 ```
@@ -152,7 +142,7 @@ This ensures Opal waits for all Rock profile containers to start before attempti
 
 **2. Updated ROCK_HOSTS Environment Variable**
 ```yaml
-- ROCK_HOSTS=rock-default:8085,rock-genomics:8085,rock-survival:8085
+- ROCK_HOSTS=rock-default:8085,rock-survival:8085
 ```
 This comma-separated list tells Opal where to find all available Rock servers. Opal uses this to discover and manage multiple DataSHIELD computation environments simultaneously.
 
@@ -170,10 +160,6 @@ rock-default:
 
 **4. Added New Profile Services**
 ```yaml
-rock-genomics:
-  environment:
-    - ROCK_ID=genomics  # Unique profile identifier
-
 rock-survival:
   environment:
     - ROCK_ID=survival  # Unique profile identifier
@@ -181,6 +167,7 @@ rock-survival:
 Each profile runs in its own container, providing isolated R environments. The unique `ROCK_ID` allows Opal to route DataSHIELD operations to the correct profile.
 
 **5. What Stays the Same**
+
 - **MongoDB service**: Data storage is independent of computation profiles
 - **Volumes**: Named volumes preserve your existing data during the transition
 - **Network**: Same `opalnet` network ensures all services can communicate
@@ -191,9 +178,8 @@ This transforms your architecture from a single computation environment to multi
 Before: Opal ↔ Single Rock Container
 
 After:  Opal ↔ Multiple Rock Containers (profiles)
-        ├── rock-default (dsBase, dsStats)
-        ├── rock-genomics (dsOmics, dsExposure)  
-        └── rock-survival (dsSurvival)
+        ├── rock-default (dsBase)
+        └── rock-survival (dsBase,dsSurvival)
 ```
 
 ### Step 3: Apply changes with maintenance window
@@ -353,6 +339,7 @@ docker-compose stop rock-genomics
 ### Next steps
 
 With profiles working locally, you can:
+
 - Install different packages in each profile using the Opal UI
 - Create project-specific profile assignments
 - Test new DataSHIELD packages safely in development profiles

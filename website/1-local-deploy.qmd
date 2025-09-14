@@ -171,6 +171,7 @@ ds.ls()
 ```
 
 Notes:
+
 - The Opal + Rock images are DataSHIELD‑ready by design. If a package appears missing, ensure Rock pulled the latest image or install required packages in Rock.
 - For real deployments, use HTTPS with proper certificates and omit the SSL verification overrides.
 

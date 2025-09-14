@@ -14,9 +14,9 @@ book:
     - env_setup.qmd
     - up_2_speed.qmd
     - 1-local-deploy.qmd
-    - 2-going-live.qmd
-    # - 3-going-live.qmd
-    # - 4-datashield-pooled.qmd
+    #- 2-going-live.qmd
+    - 3-add-profiles.qmd
+    - 4-creating-a-rock-server.qmd
     # - about.qmd
   sidebar:
     logo: logo.svg
