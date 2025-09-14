@@ -1,5 +1,5 @@
 ---
-title: "3. Adding and managing profiles"
+title: "3. Managing profiles"
 format: html
 engine: knitr
 ---
@@ -16,6 +16,7 @@ Learn how to add new DataSHIELD profiles to your local Opal deployment from sect
 
 ### What are profiles?
 Profiles in Opal/DataSHIELD are named configurations that can include:
+
 - Specific sets of DataSHIELD packages
 - Different R package versions
 - Custom package repositories
@@ -135,6 +136,66 @@ networks:
   opalnet:
 ```
 
+#### Understanding the changes
+
+Let's break down what changed from the simple setup in section 1 and why:
+
+**1. Modified Opal Service Dependencies**
+```yaml
+depends_on:
+  - rock-default
+  - rock-genomics  # NEW
+  - rock-survival  # NEW
+  - mongo
+```
+This ensures Opal waits for all Rock profile containers to start before attempting to connect to them, preventing connection errors during startup.
+
+**2. Updated ROCK_HOSTS Environment Variable**
+```yaml
+- ROCK_HOSTS=rock-default:8085,rock-genomics:8085,rock-survival:8085
+```
+This comma-separated list tells Opal where to find all available Rock servers. Opal uses this to discover and manage multiple DataSHIELD computation environments simultaneously.
+
+**3. Renamed Original Rock Service**
+```yaml
+# From: rock (section 1) 
+# To:   rock-default
+rock-default:
+  environment:
+    - ROCK_ID=default  # Explicit profile name
+```
+- **Consistency**: All profiles now follow the same naming pattern (`rock-{profile-name}`)
+- **Clarity**: Makes it explicit that this is the "default" profile
+- **ROCK_ID**: Each Rock container needs a unique identifier for Opal to distinguish between profiles
+
+**4. Added New Profile Services**
+```yaml
+rock-genomics:
+  environment:
+    - ROCK_ID=genomics  # Unique profile identifier
+
+rock-survival:
+  environment:
+    - ROCK_ID=survival  # Unique profile identifier
+```
+Each profile runs in its own container, providing isolated R environments. The unique `ROCK_ID` allows Opal to route DataSHIELD operations to the correct profile.
+
+**5. What Stays the Same**
+- **MongoDB service**: Data storage is independent of computation profiles
+- **Volumes**: Named volumes preserve your existing data during the transition
+- **Network**: Same `opalnet` network ensures all services can communicate
+
+This transforms your architecture from a single computation environment to multiple isolated profiles:
+
+```
+Before: Opal ↔ Single Rock Container
+
+After:  Opal ↔ Multiple Rock Containers (profiles)
+        ├── rock-default (dsBase, dsStats)
+        ├── rock-genomics (dsOmics, dsExposure)  
+        └── rock-survival (dsSurvival)
+```
+
 ### Step 3: Apply changes with maintenance window
 
 ::: {.callout-warning}
@@ -228,25 +289,6 @@ docker-compose rm rock-genomics
 **Maintenance Planning**: Profile changes require a brief service interruption. For production deployments, schedule these changes during low-usage periods and communicate the maintenance window to users.
 :::
 
-### Configuring profiles in Opal UI
-
-After your Rock containers are running, configure them in the Opal web interface:
-
-1. **Access Opal**: Navigate to `http://localhost:8080` and login as administrator
-
-2. **Go to DataSHIELD Configuration**: 
-   - Click on "Administration" in the top menu
-   - Select "DataSHIELD" from the left sidebar
-
-3. **Add Rock Servers**:
-   - Click "Add DataSHIELD Configuration" 
-   - Name: `genomics`
-   - URL: `http://rock-genomics:8085`
-   - Click "Save"
-   - Repeat for other profiles
-
-4. **Test connectivity**: Each profile should show as "Available" in the DataSHIELD configurations list
-
 ### Testing your profiles from R
 
 Verify each profile works correctly:
@@ -278,44 +320,6 @@ DSI::datashield.pkg_status(conns)
 DSI::datashield.logout(conns)
 ```
 
-### Common profile patterns
-
-#### Research-focused profiles
-```yaml
-# Genomics research
-rock-genomics:
-  image: datashield/rock-base:latest
-  environment:
-    - ROCK_ID=genomics
-
-# Epidemiology research  
-rock-epi:
-  image: datashield/rock-base:latest
-  environment:
-    - ROCK_ID=epidemiology
-
-# Survival analysis
-rock-survival:
-  image: datashield/rock-base:latest
-  environment:
-    - ROCK_ID=survival
-```
-
-#### Development vs stable
-```yaml
-# Stable production packages
-rock-stable:
-  image: datashield/rock-base:latest
-  environment:
-    - ROCK_ID=stable
-
-# Testing new packages
-rock-dev:
-  image: datashield/rock-base:latest
-  environment:
-    - ROCK_ID=development
-```
-
 ### Troubleshooting profiles
 
 #### Profile not appearing in Opal UI
@@ -345,28 +349,6 @@ docker stats
 # 2. Stopping unused profiles temporarily
 docker-compose stop rock-genomics
 ```
-
-### Best practices for local development
-
-1. **Start simple**: Begin with 2-3 profiles, add more as needed
-
-2. **Consistent naming**: Use descriptive profile names
-   - `default` for standard DataSHIELD packages
-   - `genomics` for omics analysis
-   - `survival` for survival analysis
-   - `dev` for testing new packages
-
-3. **Document your profiles**: Keep a simple list
-   ```
-   # My DataSHIELD Profiles
-   - default: dsBase, dsStats
-   - genomics: dsOmics, dsExposure  
-   - survival: dsSurvival
-   ```
-
-4. **Test regularly**: After adding profiles, test connectivity from R
-
-5. **Clean up unused profiles**: Remove profiles you're not using to save resources
 
 ### Next steps
 
