@@ -171,8 +171,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#funding" id="toc-funding" class="nav-link active" data-scroll-target="#funding">Funding</a></li>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#workshop-details" id="toc-workshop-details" class="nav-link" data-scroll-target="#workshop-details">Workshop Details</a></li>
   <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a></li>
   <li><a href="#workshop-scope" id="toc-workshop-scope" class="nav-link" data-scroll-target="#workshop-scope">Workshop scope</a></li>
@@ -221,12 +220,9 @@ p {
 <div style="display: flex; justify-content: space-around;">
 <p><img src="figures/logo1.png" class="img-fluid" style="height: 81px; margin-right: 20px;" alt="Image 1"> <img src="figures/logo2.png" class="img-fluid" style="height: 81px; margin-left: 20px;" alt="Image 2"></p>
 </div>
-<section id="funding" class="level1">
-<h1>Funding</h1>
-</section>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>This site hosts materials for a hands‑on workshop on installing and operating DataSHIELD backends using Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self‑signed TLS, and then show how to go live with Let’s Encrypt. Expect practical Linux/SSH usage from a terminal and a copy‑pasteable flow you can follow on your laptop.</p>
+<p>This site hosts materials for a hands‑on workshop on deploying and managing Opal and Armadillo. We will cover local deploy of the infrastructure, manage of profiles and profile creation. As extra material we will have a look at strategies of monitoring of the infrastructure. Expect practical Linux/SSH usage from a terminal and a copy‑pasteable flow you can follow on your laptop. The materials of this workshop, especially the live deploy part are applicable to cloud deployments as well.</p>
 </section>
 <section id="workshop-details" class="level1">
 <h1>Workshop Details</h1>
@@ -243,9 +239,9 @@ p {
 <h1>Workshop scope</h1>
 <ul>
 <li>Deploy Opal and Armadillo with Docker Compose (no Kubernetes)</li>
-<li>Nginx reverse proxy: local self‑signed → Let’s Encrypt</li>
+<li>Nginx reverse proxy: go live with Let’s Encrypt</li>
 <li>Basic Linux/SSH workflows suitable for on‑prem and cloud</li>
-<li>Optional: lightweight monitoring with Telegraf + Grafana (time permitting)</li>
+<li>Optional: lightweight monitoring with Telegraf/Prometheus + Grafana (time permitting)</li>
 </ul>
 </section>
 <section id="who-this-is-for" class="level1">
@@ -258,7 +254,12 @@ p {
 </section>
 <section id="prerequisites-summary" class="level1">
 <h1>Prerequisites (summary)</h1>
-<p>See details in <a href="./env_setup.html">Environment Setup</a>. In short: - Docker Desktop (Mac/Windows) or Docker Engine + Compose v2 (Linux) - Terminal + SSH access; ability to open ports 80/443 locally - Optional domain name if you want to test live certificates</p>
+<p>See details in <a href="./env_setup.html">Environment Setup</a>. In short:</p>
+<ul>
+<li>Docker Desktop (Mac/Windows) or Docker Engine + Compose v2 (Linux)</li>
+<li>Terminal + SSH access; ability to open ports 80/443 locally</li>
+<li>Optional domain name if you want to test live certificates</li>
+</ul>
 </section>
 <section id="schedule" class="level1">
 <h1>Schedule</h1>
