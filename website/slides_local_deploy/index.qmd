@@ -1,6 +1,6 @@
 ---
-title: "DataSHIELD Local Deployment"
-subtitle: "Docker Compose Setup"
+title: "Opal/Armadillo Local Deployment"
+subtitle: "Dick Postma and Xavier Escribà Montagut"
 format: 
   revealjs:
     theme: default
@@ -12,7 +12,7 @@ format:
 
 ## Overview
 
-**Goal**: Deploy Opal locally using Docker Compose
+**Goal**: Deploy Opal/Armadillo locally using Docker Compose
 
 **Why start local?**
 
@@ -24,34 +24,19 @@ format:
 
 ---
 
-## Architecture Overview
-
-```{mermaid}
-graph LR
-  B["Browser<br/>http://localhost:8080"] -->|8080| O["Opal<br/>(8080)"]
-  subgraph Docker["docker network: opalnet"]
-    O -->|R/DataSHIELD| R["Rock<br/>(8085)"]
-    O -->|Auxiliary| MONGO["MongoDB<br/>(27017)"]
-  end
-```
-
----
-
 ## Services & Roles
-
-**Opal (OBiBa DataSHIELD Server)**
+**🏢 Opal (OBiBa DataSHIELD Server)**
 - Main DataSHIELD server and admin UI
-- HTTP on 8080 (direct access)
-- Configuration via environment variables
 
-**Rock (R Server)**
+<br>
+
+**🔧 Rock (R Server)**
 - Executes R/DataSHIELD calls from Opal
-- Reachable as `rock:8085` on Docker network
-- Ships with DataSHIELD packages
 
-**MongoDB (Auxiliary Store)**
+<br>
+
+**🗄️ MongoDB (Auxiliary Store)**
 - Used by Opal for auxiliary features
-- Version 6.0 (per Opal compatibility requirements)
 
 ---
 
@@ -62,6 +47,8 @@ opal-local/
 ├── .env                    # Environment variables
 └── docker-compose.yml     # Service definitions  
 ```
+
+<br>
 
 **Simple setup** - only 2 files needed!
 
@@ -75,20 +62,18 @@ Create `.env` file with admin password:
 OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
 ```
 
-- `OPAL_ADMINISTRATOR_PASSWORD`: Required on first start
-- No database credentials needed (MongoDB only)
+<br>
+
+- `OPAL_ADMINISTRATOR_PASSWORD`: Password for the Opal `administrator` account
 
 ---
 
-## Step 2: Docker Compose
+## Step 2: Docker Compose (simplified)
 
 ```yaml
 services:
   opal:
     image: obiba/opal:latest
-    depends_on:
-      - rock
-      - mongo
     ports:
       - "8080:8080"
       - "8443:8443"
@@ -97,24 +82,12 @@ services:
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
       - ROCK_HOSTS=rock:8085
-    volumes:
-      - opal_srv:/srv
   mongo:
     image: mongo:6.0
-    volumes:
-      - mongo_data:/data/db
-
   rock:
     image: datashield/rock-base:latest
     environment:
-    - ROCK_ID=new-stack-rock
-
-volumes:
-  opal_srv:
-  mongo_data:
-
-networks:
-  opalnet:
+    - ROCK_ID=new-st
 ```
 
 ---
@@ -123,13 +96,13 @@ networks:
 
 ```bash
 # Start all services
-docker compose up -d
+docker-compose up -d
 
 # Check status
-docker compose ps
+docker-compose ps
 
 # Monitor Opal logs
-docker compose logs -f opal
+docker-compose logs -f opal
 ```
 
 **First start**: May take a minute while images are pulled
@@ -169,17 +142,13 @@ ds.ls()
 
 ## Key Configuration Points
 
-**Environment Variables**
-- `ROCK_HOSTS=rock:8085` → R server connection
-- `MONGO_HOST=mongo` → MongoDB connection
-- `OPAL_ADMINISTRATOR_PASSWORD` → Admin access
-
 **Network Setup**
+
 - All services on `opalnet` Docker network
-- Direct access to Opal on port 8080
-- Internal service communication via Docker DNS
+- Exposed ports: 8080: HTTP, 8443: HTTPS (Opal)
 
 **Persistence**
+
 - Named volumes preserve data across restarts
 - Remove volumes to reset completely
 
@@ -188,35 +157,15 @@ ds.ls()
 ## Troubleshooting
 
 **Opal not reachable**
-- Check if port 8080 is available locally
-- Verify container is running: `docker compose ps`
+
+- Check if port 8080 is available locally: `lsof -i :8080` or `netstat -an | grep 8080`
+- Verify container is running: `docker-compose ps`
 
 **Login fails**
+
 - Ensure `OPAL_ADMINISTRATOR_PASSWORD` set at first start
 - Reset: stop containers, remove `opal_srv` volume, restart
 
-**MongoDB issues**
-- Use `mongo:6.0` (Opal compatibility requirement)
-
-**Rock connection issues**
-- Check that Rock container is running and healthy
-- Verify `ROCK_HOSTS=rock:8085` configuration
-
----
-
-## Next Steps
-
-**For Production Deployment**
-- Add Nginx reverse proxy with TLS
-- Configure proper DNS
-- Implement security hardening
-- Set up monitoring and backups
-
-**For Development**
-- Install additional DataSHIELD packages in Rock
-- Import datasets into Opal
-- Test DataSHIELD analysis workflows
-- Develop custom DataSHIELD functions
 
 ---
 
@@ -224,13 +173,12 @@ ds.ls()
 
 ✅ **Achieved**: Local DataSHIELD stack with Docker Compose
 
-✅ **Benefits**: 
+🚀 **Benefits**: 
+
 - Quick setup and iteration
 - Safe development environment  
 - Production-ready foundation
 - Complete DataSHIELD functionality
 
-✅ **Ready for**: Package development, testing, and learning DataSHIELD
-
-**Next session**: Going live with Nginx, TLS, and DNS!
+🎯 **Ready for**: Going live with Nginx, TLS, and DNS!
 

@@ -10,7 +10,7 @@
 <link href="index_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.5.54">
 
-  <title>DataSHIELD Local Deployment</title>
+  <title>Opal/Armadillo Local Deployment</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -387,17 +387,14 @@
       margin-right: 0; 
     }
   </style>
-  <script src="index_files/libs/quarto-diagram/mermaid.min.js"></script>
-  <script src="index_files/libs/quarto-diagram/mermaid-init.js"></script>
-  <link href="index_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 </head>
 <body class="quarto-light">
   <div class="reveal">
     <div class="slides">
 
 <section id="title-slide" class="quarto-title-block center">
-  <h1 class="title">DataSHIELD Local Deployment</h1>
-  <p class="subtitle">Docker Compose Setup</p>
+  <h1 class="title">Opal/Armadillo Local Deployment</h1>
+  <p class="subtitle">Dick Postma and Xavier Escribà Montagut</p>
 
 <div class="quarto-title-authors">
 </div>
@@ -405,7 +402,7 @@
 </section>
 <section id="overview" class="slide level2">
 <h2>Overview</h2>
-<p><strong>Goal</strong>: Deploy Opal locally using Docker Compose</p>
+<p><strong>Goal</strong>: Deploy Opal/Armadillo locally using Docker Compose</p>
 <p><strong>Why start local?</strong></p>
 <ul>
 <li>🚀 <strong>Low friction</strong> - no DNS, firewalls, or cloud costs</li>
@@ -416,93 +413,61 @@
 <li>🎓 <strong>Teaching aid</strong> - contained lab environment</li>
 </ul>
 </section>
-<section id="architecture-overview" class="slide level2">
-<h2>Architecture Overview</h2>
-<div class="cell" data-reveal="true" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">graph LR
-  B["Browser&lt;br/&gt;http://localhost:8080"] --&gt;|8080| O["Opal&lt;br/&gt;(8080)"]
-  subgraph Docker["docker network: opalnet"]
-    O --&gt;|R/DataSHIELD| R["Rock&lt;br/&gt;(8085)"]
-    O --&gt;|Auxiliary| MONGO["MongoDB&lt;br/&gt;(27017)"]
-  end
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-</section>
 <section id="services-roles" class="slide level2">
 <h2>Services &amp; Roles</h2>
-<p><strong>Opal (OBiBa DataSHIELD Server)</strong> - Main DataSHIELD server and admin UI - HTTP on 8080 (direct access) - Configuration via environment variables</p>
-<p><strong>Rock (R Server)</strong> - Executes R/DataSHIELD calls from Opal - Reachable as <code>rock:8085</code> on Docker network - Ships with DataSHIELD packages</p>
-<p><strong>MongoDB (Auxiliary Store)</strong> - Used by Opal for auxiliary features - Version 6.0 (per Opal compatibility requirements)</p>
+<p><strong>🏢 Opal (OBiBa DataSHIELD Server)</strong> - Main DataSHIELD server and admin UI</p>
+<p><br></p>
+<p><strong>🔧 Rock (R Server)</strong> - Executes R/DataSHIELD calls from Opal</p>
+<p><br></p>
+<p><strong>🗄️ MongoDB (Auxiliary Store)</strong> - Used by Opal for auxiliary features</p>
 </section>
 <section id="file-structure" class="slide level2">
 <h2>File Structure</h2>
 <pre><code>opal-local/
 ├── .env                    # Environment variables
 └── docker-compose.yml     # Service definitions  </code></pre>
+<p><br></p>
 <p><strong>Simple setup</strong> - only 2 files needed!</p>
 </section>
 <section id="step-1-environment-variables" class="slide level2">
 <h2>Step 1: Environment Variables</h2>
 <p>Create <code>.env</code> file with admin password:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href=""></a><span class="va">OPAL_ADMINISTRATOR_PASSWORD</span><span class="op">=</span>ChangeMe123!</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><br></p>
 <ul>
-<li><code>OPAL_ADMINISTRATOR_PASSWORD</code>: Required on first start</li>
-<li>No database credentials needed (MongoDB only)</li>
+<li><code>OPAL_ADMINISTRATOR_PASSWORD</code>: Password for the Opal <code>administrator</code> account</li>
 </ul>
 </section>
-<section id="step-2-docker-compose" class="slide level2">
-<h2>Step 2: Docker Compose</h2>
+<section id="step-2-docker-compose-simplified" class="slide level2">
+<h2>Step 2: Docker Compose (simplified)</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href=""></a><span class="fu">services</span><span class="kw">:</span></span>
 <span id="cb3-2"><a href=""></a><span class="at">  </span><span class="fu">opal</span><span class="kw">:</span></span>
 <span id="cb3-3"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> obiba/opal:latest</span></span>
-<span id="cb3-4"><a href=""></a><span class="at">    </span><span class="fu">depends_on</span><span class="kw">:</span></span>
-<span id="cb3-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> rock</span></span>
-<span id="cb3-6"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> mongo</span></span>
-<span id="cb3-7"><a href=""></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
-<span id="cb3-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8080:8080"</span></span>
-<span id="cb3-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8443:8443"</span></span>
-<span id="cb3-10"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
-<span id="cb3-11"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}</span></span>
-<span id="cb3-12"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> MONGO_HOST=mongo</span></span>
-<span id="cb3-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> MONGO_PORT=27017</span></span>
-<span id="cb3-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ROCK_HOSTS=rock:8085</span></span>
-<span id="cb3-15"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
-<span id="cb3-16"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> opal_srv:/srv</span></span>
-<span id="cb3-17"><a href=""></a><span class="at">  </span><span class="fu">mongo</span><span class="kw">:</span></span>
-<span id="cb3-18"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> mongo:6.0</span></span>
-<span id="cb3-19"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
-<span id="cb3-20"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> mongo_data:/data/db</span></span>
-<span id="cb3-21"><a href=""></a></span>
-<span id="cb3-22"><a href=""></a><span class="at">  </span><span class="fu">rock</span><span class="kw">:</span></span>
-<span id="cb3-23"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> datashield/rock-base:latest</span></span>
-<span id="cb3-24"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
-<span id="cb3-25"><a href=""></a><span class="at">    </span><span class="kw">-</span><span class="at"> ROCK_ID=new-stack-rock</span></span>
-<span id="cb3-26"><a href=""></a></span>
-<span id="cb3-27"><a href=""></a><span class="fu">volumes</span><span class="kw">:</span></span>
-<span id="cb3-28"><a href=""></a><span class="at">  </span><span class="fu">opal_srv</span><span class="kw">:</span></span>
-<span id="cb3-29"><a href=""></a><span class="at">  </span><span class="fu">mongo_data</span><span class="kw">:</span></span>
-<span id="cb3-30"><a href=""></a></span>
-<span id="cb3-31"><a href=""></a><span class="fu">networks</span><span class="kw">:</span></span>
-<span id="cb3-32"><a href=""></a><span class="at">  </span><span class="fu">opalnet</span><span class="kw">:</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href=""></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
+<span id="cb3-5"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8080:8080"</span></span>
+<span id="cb3-6"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">"8443:8443"</span></span>
+<span id="cb3-7"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb3-8"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}</span></span>
+<span id="cb3-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> MONGO_HOST=mongo</span></span>
+<span id="cb3-10"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> MONGO_PORT=27017</span></span>
+<span id="cb3-11"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ROCK_HOSTS=rock:8085</span></span>
+<span id="cb3-12"><a href=""></a><span class="at">  </span><span class="fu">mongo</span><span class="kw">:</span></span>
+<span id="cb3-13"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> mongo:6.0</span></span>
+<span id="cb3-14"><a href=""></a><span class="at">  </span><span class="fu">rock</span><span class="kw">:</span></span>
+<span id="cb3-15"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> datashield/rock-base:latest</span></span>
+<span id="cb3-16"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb3-17"><a href=""></a><span class="at">    </span><span class="kw">-</span><span class="at"> ROCK_ID=new-st</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="step-3-deploy-the-stack" class="slide level2">
 <h2>Step 3: Deploy the Stack</h2>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href=""></a><span class="co"># Start all services</span></span>
-<span id="cb4-2"><a href=""></a><span class="ex">docker</span> compose up <span class="at">-d</span></span>
+<span id="cb4-2"><a href=""></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span>
 <span id="cb4-3"><a href=""></a></span>
 <span id="cb4-4"><a href=""></a><span class="co"># Check status</span></span>
-<span id="cb4-5"><a href=""></a><span class="ex">docker</span> compose ps</span>
+<span id="cb4-5"><a href=""></a><span class="ex">docker-compose</span> ps</span>
 <span id="cb4-6"><a href=""></a></span>
 <span id="cb4-7"><a href=""></a><span class="co"># Monitor Opal logs</span></span>
-<span id="cb4-8"><a href=""></a><span class="ex">docker</span> compose logs <span class="at">-f</span> opal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-8"><a href=""></a><span class="ex">docker-compose</span> logs <span class="at">-f</span> opal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>First start</strong>: May take a minute while images are pulled</p>
 <p><strong>Access</strong>: Open <code>http://localhost:8080</code> in your browser</p>
 <p><strong>Login</strong>: User <code>administrator</code> + password from <code>.env</code></p>
@@ -531,29 +496,42 @@
 </section>
 <section id="key-configuration-points" class="slide level2">
 <h2>Key Configuration Points</h2>
-<p><strong>Environment Variables</strong> - <code>ROCK_HOSTS=rock:8085</code> → R server connection - <code>MONGO_HOST=mongo</code> → MongoDB connection - <code>OPAL_ADMINISTRATOR_PASSWORD</code> → Admin access</p>
-<p><strong>Network Setup</strong> - All services on <code>opalnet</code> Docker network - Direct access to Opal on port 8080 - Internal service communication via Docker DNS</p>
-<p><strong>Persistence</strong> - Named volumes preserve data across restarts - Remove volumes to reset completely</p>
+<p><strong>Network Setup</strong></p>
+<ul>
+<li>All services on <code>opalnet</code> Docker network</li>
+<li>Exposed ports: 8080: HTTP, 8443: HTTPS (Opal)</li>
+</ul>
+<p><strong>Persistence</strong></p>
+<ul>
+<li>Named volumes preserve data across restarts</li>
+<li>Remove volumes to reset completely</li>
+</ul>
 </section>
 <section id="troubleshooting" class="slide level2">
 <h2>Troubleshooting</h2>
-<p><strong>Opal not reachable</strong> - Check if port 8080 is available locally - Verify container is running: <code>docker compose ps</code></p>
-<p><strong>Login fails</strong> - Ensure <code>OPAL_ADMINISTRATOR_PASSWORD</code> set at first start - Reset: stop containers, remove <code>opal_srv</code> volume, restart</p>
-<p><strong>MongoDB issues</strong> - Use <code>mongo:6.0</code> (Opal compatibility requirement)</p>
-<p><strong>Rock connection issues</strong> - Check that Rock container is running and healthy - Verify <code>ROCK_HOSTS=rock:8085</code> configuration</p>
-</section>
-<section id="next-steps" class="slide level2">
-<h2>Next Steps</h2>
-<p><strong>For Production Deployment</strong> - Add Nginx reverse proxy with TLS - Configure proper DNS - Implement security hardening - Set up monitoring and backups</p>
-<p><strong>For Development</strong> - Install additional DataSHIELD packages in Rock - Import datasets into Opal - Test DataSHIELD analysis workflows - Develop custom DataSHIELD functions</p>
+<p><strong>Opal not reachable</strong></p>
+<ul>
+<li>Check if port 8080 is available locally: <code>lsof -i :8080</code> or <code>netstat -an | grep 8080</code></li>
+<li>Verify container is running: <code>docker-compose ps</code></li>
+</ul>
+<p><strong>Login fails</strong></p>
+<ul>
+<li>Ensure <code>OPAL_ADMINISTRATOR_PASSWORD</code> set at first start</li>
+<li>Reset: stop containers, remove <code>opal_srv</code> volume, restart</li>
+</ul>
 </section>
 <section id="summary" class="slide level2">
 <h2>Summary</h2>
 <p>✅ <strong>Achieved</strong>: Local DataSHIELD stack with Docker Compose</p>
-<p>✅ <strong>Benefits</strong>: - Quick setup and iteration - Safe development environment<br>
-- Production-ready foundation - Complete DataSHIELD functionality</p>
-<p>✅ <strong>Ready for</strong>: Package development, testing, and learning DataSHIELD</p>
-<p><strong>Next session</strong>: Going live with Nginx, TLS, and DNS!</p>
+<p>🚀 <strong>Benefits</strong>:</p>
+<ul>
+<li>Quick setup and iteration</li>
+<li>Safe development environment<br>
+</li>
+<li>Production-ready foundation</li>
+<li>Complete DataSHIELD functionality</li>
+</ul>
+<p>🎯 <strong>Ready for</strong>: Going live with Nginx, TLS, and DNS!</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 

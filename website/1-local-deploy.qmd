@@ -49,7 +49,7 @@ graph LR
   - Executes R/DataSHIELD calls initiated by Opal, reachable as `rock:8085` on the Docker network.
   - Ships with DataSHIELD packages; ideal for quick connectivity checks.
 - MongoDB (auxiliary store):
-  - Used by Opal for auxiliary features; we pin to `mongo:6.0` per Opal guidance.
+  - Used by Opal for auxiliary features; we pin to `mongo:6.0` per Opal documentationreference.
 
 ### Goal
 Deploy Opal locally on your laptop using Docker Compose. This lets you try DataSHIELD quickly without DNS or cloud setup and is perfect for package development and smoke tests. See the prerequisites in `@env_setup.qmd` and the scope in `@up_2_speed.qmd`.
@@ -60,6 +60,7 @@ Deploy Opal locally on your laptop using Docker Compose. This lets you try DataS
 - MongoDB for auxiliary storage
 
 References:
+
 - Opal Docker image + env vars: [Installation — Docker Image](https://opaldoc.obiba.org/en/latest/admin/installation.html) and [Configuration](https://opaldoc.obiba.org/en/latest/admin/configuration.html)
 - Templates adapted from: `easy-opal` compose template ([docker-compose.yml.tpl](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl)); see also helper commands ([src/commands](https://github.com/isglobal-brge/easy-opal/tree/main/src/commands))
 
@@ -69,7 +70,7 @@ Use this folder layout:
 ```
 opal-local/
 ├── .env
-├── docker-compose.yml
+└── docker-compose.yml
 ```
 
 ### 1) Create a `.env` file
@@ -82,7 +83,7 @@ OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
 - `OPAL_ADMINISTRATOR_PASSWORD` is required on first start of `obiba/opal`.
 
 ::: {.callout-note}
-**Production note**: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform's native secrets management system. We use a `.env` file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files for reproducibility.
+**Production note**: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform's native secrets management system. We use a `.env` file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files to colleagues or collaborators.
 :::
 
 ### 2) docker-compose.yml

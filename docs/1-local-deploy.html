@@ -305,7 +305,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul></li>
 <li>MongoDB (auxiliary store):
 <ul>
-<li>Used by Opal for auxiliary features; we pin to <code>mongo:6.0</code> per Opal guidance.</li>
+<li>Used by Opal for auxiliary features; we pin to <code>mongo:6.0</code> per Opal documentationreference.</li>
 </ul></li>
 </ul>
 </section>
@@ -320,14 +320,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Rock R server (<code>datashield/rock-base:latest</code>) for DataSHIELD execution</li>
 <li>MongoDB for auxiliary storage</li>
 </ul>
-<p>References: - Opal Docker image + env vars: <a href="https://opaldoc.obiba.org/en/latest/admin/installation.html">Installation — Docker Image</a> and <a href="https://opaldoc.obiba.org/en/latest/admin/configuration.html">Configuration</a> - Templates adapted from: <code>easy-opal</code> compose template (<a href="https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl">docker-compose.yml.tpl</a>); see also helper commands (<a href="https://github.com/isglobal-brge/easy-opal/tree/main/src/commands">src/commands</a>)</p>
+<p>References:</p>
+<ul>
+<li>Opal Docker image + env vars: <a href="https://opaldoc.obiba.org/en/latest/admin/installation.html">Installation — Docker Image</a> and <a href="https://opaldoc.obiba.org/en/latest/admin/configuration.html">Configuration</a></li>
+<li>Templates adapted from: <code>easy-opal</code> compose template (<a href="https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl">docker-compose.yml.tpl</a>); see also helper commands (<a href="https://github.com/isglobal-brge/easy-opal/tree/main/src/commands">src/commands</a>)</li>
+</ul>
 </section>
 <section id="files-layout" class="level3">
 <h3 class="anchored" data-anchor-id="files-layout">Files layout</h3>
 <p>Use this folder layout:</p>
 <pre><code>opal-local/
 ├── .env
-├── docker-compose.yml</code></pre>
+└── docker-compose.yml</code></pre>
 </section>
 <section id="create-a-.env-file" class="level3">
 <h3 class="anchored" data-anchor-id="create-a-.env-file">1) Create a <code>.env</code> file</h3>
@@ -346,7 +350,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Production note</strong>: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform’s native secrets management system. We use a <code>.env</code> file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files for reproducibility.</p>
+<p><strong>Production note</strong>: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform’s native secrets management system. We use a <code>.env</code> file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files to colleagues or collaborators.</p>
 </div>
 </div>
 </section>
