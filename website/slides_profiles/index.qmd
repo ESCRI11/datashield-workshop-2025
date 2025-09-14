@@ -1,0 +1,277 @@
+---
+title: "Managing profiles"
+subtitle: "Dick Postma and Xavier Escribà Montagut"
+format: 
+  revealjs:
+    theme: default
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    css: styles.css
+---
+
+## Overview
+
+**Goal**: Add multiple DataSHIELD profiles to your local Opal deployment
+
+**What are profiles?**
+
+Named R server configurations in Opal, each running as separate Rock containers with:
+
+- 📦 **Fixed package versions** - Project-specific versions for reproducibility
+- 🔄 **Load balancing** - Multiple servers can share the same profile name
+
+---
+
+## Architecture: Single vs Multiple Profiles
+
+**Before (Section 1):**
+```
+Browser → Opal → Single Rock Container
+```
+
+<br>
+
+**After (Profiles):**
+```
+Browser → Opal → Multiple Rock Containers
+                ├── rock-default (dsBase)
+                ├── rock-genomics (dsOmics)
+                └── rock-survival (dsSurvival)
+```
+
+---
+
+## Common Use Cases
+
+🔬 **Research-specific environments**
+- Different studies need different packages
+
+🧪 **Development vs stable**  
+- Test new packages safely
+
+🎓 **Learning & experimentation**
+- Try packages without breaking production
+
+---
+
+## File Structure (No Change!)
+
+```
+opal-local/
+├── .env                    # Same password
+└── docker-compose.yml     # Extended with profiles
+```
+
+<br>
+
+**Same foundation** - just add more Rock services
+
+---
+
+## Step 1: Environment (Unchanged)
+
+Your `.env` file stays the same:
+
+```bash
+OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
+```
+
+<br>
+
+**No new secrets needed** - this password is used for the `administrator` account on Opal, not for the Rock containers.
+
+---
+
+## Step 2: Extended Docker Compose
+
+**Key changes from Section 1:**
+
+```yaml
+services:
+  opal:
+    depends_on:
+      - rock-default    # Renamed from 'rock'
+      - rock-survival   # NEW profile
+    environment:
+      # Multiple Rock hosts - comma separated
+      - ROCK_HOSTS=rock-default:8085,rock-survival:8085
+
+  rock-default:         # Renamed for consistency
+    environment:
+      - ROCK_ID=default
+
+  rock-survival:        # NEW profile service
+    environment:
+      - ROCK_ID=survival
+```
+
+---
+
+## Understanding the Changes
+
+**1. Service Dependencies**
+```yaml
+depends_on:
+  - rock-default    # Renamed from 'rock'
+  - rock-survival   # NEW profile
+```
+**Why**: Ensures Opal waits for all Rock containers before starting
+
+**2. Multiple Rock Hosts**
+```yaml
+- ROCK_HOSTS=rock-default:8085,rock-survival:8085
+```
+**Why**: Tells Opal where to find all available computation environments
+
+---
+
+## Understanding the Changes (cont.)
+
+**3. Unique Rock IDs**
+```yaml
+rock-default:
+  environment:
+    - ROCK_ID=default    # Profile identifier
+
+rock-survival:
+  environment:
+    - ROCK_ID=survival   # Must be unique
+```
+**Why**: Each profile needs a unique ID for Opal to route requests correctly
+
+**4. Same Foundation**
+- MongoDB, volumes, network unchanged
+- **Data preserved** during transition
+
+---
+
+## Step 3: Apply Changes (Critical!)
+
+**⚠️ Maintenance Window Required**
+
+```bash
+# NEVER use 'docker-compose down' - loses data!
+docker-compose stop
+
+# Update your docker-compose.yml file
+
+# Start with new configuration
+docker-compose up -d
+
+# Verify all services
+docker-compose ps
+```
+
+**Key**: Use `stop` not `down` to preserve data volumes
+
+---
+
+## Step 4: Verify Profiles
+
+```bash
+# Check all containers running
+docker-compose ps
+
+# Check individual profile logs
+docker-compose logs rock-default
+docker-compose logs rock-survival
+```
+
+<br>
+
+**Success**: All Rock containers show as healthy
+
+---
+
+## Testing Profiles from R
+
+```r
+library(DSI)
+library(DSOpal)
+# SSL config for local testing
+set_config(config(ssl_verifyhost = 0L, ssl_verifypeer = 0L))
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(
+    server = "survival",
+    url = "http://localhost:8080", 
+    user = "administrator",
+    password = "ChangeMe123!",
+    profile = "survival"  # Specify profile
+)
+
+logins <- builder$build()
+conns <- DSI::datashield.login(logins)
+DSI::datashield.pkg_status(conns)  # Check packages
+```
+
+---
+
+## Adding New Profiles
+
+**1. Add Rock service:**
+```yaml
+rock-newprofile:
+  image: datashield/rock-base:latest
+  environment:
+    - ROCK_ID=newprofile
+```
+
+**2. Update ROCK_HOSTS:**
+```yaml
+- ROCK_HOSTS=rock-default:8085,rock-survival:8085,rock-newprofile:8085
+```
+
+**3. Apply with maintenance window**
+
+---
+
+## Removing Profiles
+
+**1. Delete service block from docker-compose.yml**
+
+**2. Remove from ROCK_HOSTS environment variable**
+
+**3. Apply changes:**
+```bash
+docker-compose stop
+docker-compose up -d
+docker-compose rm rock-oldprofile  # Cleanup
+```
+---
+
+## Troubleshooting
+
+**Profile not appearing:**
+
+- Check container status: `docker-compose ps`
+- Check logs: `docker-compose logs rock-profilename`
+
+**Connection timeouts:**
+
+- Verify ROCK_HOSTS includes all profiles
+- Check service names match exactly
+
+---
+
+## Troubleshooting (cont.)
+
+**Memory issues:**
+
+- Monitor usage: `docker stats`
+- Stop unused profiles: `docker-compose stop rock-genomics`
+
+---
+
+## Summary
+
+✅ **Achieved**: Managing multiple profiles in a single Opal deployment
+
+🚀 **Benefits**:
+
+- Research-specific configurations  
+- Version management per project
+- Same local development workflow
+
+**Next**: Building our own Rock profiles!
