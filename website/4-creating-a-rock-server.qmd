@@ -18,15 +18,11 @@ Learn how to build custom Rock server Docker images with specific DataSHIELD pac
 While the previous section showed how to add profiles using the standard `obiba/rock:latest` image, building custom images provides several advantages:
 
 - **Version control**: Pin specific package versions for reproducibility
-- **Faster startup**: Pre-install packages during build rather than at runtime
 - **Consistency**: Ensure all environments use identical package versions
-- **Offline deployment**: Images work without internet access for package installation
-- **Custom configurations**: Include environment-specific settings
 
 ### Prerequisites
 - Docker installed and running
 - Basic understanding of Dockerfiles
-- Access to GitHub repositories for DataSHIELD packages
 - Understanding of R package dependencies
 
 ### Understanding the base image
@@ -35,6 +31,11 @@ DataSHIELD provides base images that you can extend:
 
 - **`datashield/rock-base:6.3-R4.3`**: Minimal Rock server with R 4.3
 - **`obiba/rock:latest`**: Standard Rock with common DataSHIELD packages pre-installed
+
+::: {.callout-note}
+DataSHIELD base images follow the pattern `{dsBase-version}-R{R-version}`. In the example above, `6.3-R4.3` means dsBase version 6.3 with R version 4.3.
+:::
+
 
 For custom builds, start with `rock-base` for maximum control over package versions.
 
@@ -56,31 +57,17 @@ FROM datashield/rock-base:6.3-R4.3
 
 # Define package versions for reproducibility
 ENV DSURVIVAL_VERSION v2.3.0-dev
-ENV DSBASE_VERSION v6.3.2-dev
-ENV DSTIDYVERSE_VERSION v1.0.4
 
 # Rock library path
 ENV ROCK_LIB /var/lib/rock/R/library
 
 # Install DataSHIELD packages with specific versions
-# dsBase (required by most profiles)
-RUN Rscript -e "remotes::install_github('datashield/dsBase', ref = '$DSBASE_VERSION', dependencies = TRUE, upgrade = FALSE, lib = '$ROCK_LIB')"
 
 # dsSurvival (survival analysis functions)
 RUN Rscript -e "remotes::install_github('datashield/dsSurvival', ref = '$DSURVIVAL_VERSION', dependencies = TRUE, upgrade = FALSE, lib = '$ROCK_LIB')"
 
-# dsTidyverse (optional - data manipulation)
-RUN Rscript -e "remotes::install_github('molgenis/ds-tidyverse', ref = '$DSTIDYVERSE_VERSION', dependencies = TRUE, upgrade = FALSE, lib = '$ROCK_LIB')"
-
 # Fix ownership (Rock runs as non-root user)
 RUN chown -R rock $ROCK_LIB
-
-# Add metadata labels
-LABEL maintainer="your-email@example.com"
-LABEL description="Rock server with DataSHIELD survival analysis packages"
-LABEL dsBase.version="$DSBASE_VERSION"
-LABEL dsSurvival.version="$DSURVIVAL_VERSION"
-LABEL dsTidyverse.version="$DSTIDYVERSE_VERSION"
 ```
 
 #### 2) Build the image
@@ -112,43 +99,6 @@ docker stop test-survival-rock
 docker rm test-survival-rock
 ```
 
-### Example: Genomics profile
-
-**Dockerfile.genomics**:
-```dockerfile
-FROM datashield/rock-base:6.3-R4.3
-
-# Genomics-specific package versions
-ENV DSOMICS_VERSION v1.0.6
-ENV DSBASE_VERSION v6.3.2-dev
-ENV DSEXPOSURE_VERSION v1.0.1
-
-ENV ROCK_LIB /var/lib/rock/R/library
-
-# Install base DataSHIELD packages
-RUN Rscript -e "remotes::install_github('datashield/dsBase', ref = '$DSBASE_VERSION', dependencies = TRUE, upgrade = FALSE, lib = '$ROCK_LIB')"
-
-# Install genomics packages
-RUN Rscript -e "remotes::install_github('datashield/dsOmics', ref = '$DSOMICS_VERSION', dependencies = TRUE, upgrade = FALSE, lib = '$ROCK_LIB')"
-
-# Install exposure assessment packages
-RUN Rscript -e "remotes::install_github('datashield/dsExposure', ref = '$DSEXPOSURE_VERSION', dependencies = TRUE, upgrade = FALSE, lib = '$ROCK_LIB')"
-
-# Additional bioinformatics dependencies (if needed)
-RUN Rscript -e "if (!requireNamespace('BiocManager', quietly = TRUE)) install.packages('BiocManager', lib = '$ROCK_LIB')"
-
-RUN chown -R rock $ROCK_LIB
-
-LABEL description="Rock server with DataSHIELD genomics packages"
-LABEL dsOmics.version="$DSOMICS_VERSION"
-LABEL dsExposure.version="$DSEXPOSURE_VERSION"
-```
-
-Build command:
-```bash
-docker build -f Dockerfile.genomics -t rock-genomics:v1.0.6 .
-```
-
 ### Using custom images in docker-compose
 
 Update your `docker-compose.yml` to use the custom images:
@@ -158,7 +108,7 @@ services:
   opal:
     # ... existing opal configuration
     environment:
-      - ROCK_HOSTS=rock-default:8085,rock-genomics:8085,rock-survival:8085
+      - ROCK_HOSTS=rock-default:8085,rock-survival:8085
     # ... rest of configuration
 
   rock-default:
@@ -168,16 +118,6 @@ services:
       - opalnet
     environment:
       - ROCK_ID=default
-      - ROCK_CLUSTER=default
-
-  rock-genomics:
-    image: rock-genomics:v1.0.6  # Your custom image
-    container_name: rock-genomics
-    networks:
-      - opalnet
-    environment:
-      - ROCK_ID=genomics
-      - ROCK_CLUSTER=genomics
 
   rock-survival:
     image: rock-survival:v2.3.0  # Your custom image
@@ -186,51 +126,6 @@ services:
       - opalnet
     environment:
       - ROCK_ID=survival
-      - ROCK_CLUSTER=survival
-```
-
-### Advanced Dockerfile patterns
-
-#### Multi-stage builds for smaller images
-
-```dockerfile
-# Build stage
-FROM datashield/rock-base:6.3-R4.3 as builder
-
-ENV ROCK_LIB /var/lib/rock/R/library
-
-# Install build dependencies and packages
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN Rscript -e "remotes::install_github('datashield/dsBase', dependencies = TRUE, lib = '$ROCK_LIB')"
-
-# Runtime stage
-FROM datashield/rock-base:6.3-R4.3
-
-# Copy only the installed packages
-COPY --from=builder /var/lib/rock/R/library /var/lib/rock/R/library
-RUN chown -R rock /var/lib/rock/R/library
-```
-
-#### Including custom R scripts
-
-```dockerfile
-FROM datashield/rock-base:6.3-R4.3
-
-ENV ROCK_LIB /var/lib/rock/R/library
-
-# Copy custom R functions
-COPY custom-functions.R /opt/rock/startup/
-
-# Install packages
-RUN Rscript -e "remotes::install_github('datashield/dsBase', lib = '$ROCK_LIB')"
-
-# Source custom functions on startup
-RUN echo "source('/opt/rock/startup/custom-functions.R')" >> /opt/rock/startup/init.R
-
-RUN chown -R rock $ROCK_LIB
 ```
 
 ### Image management and distribution
@@ -254,92 +149,21 @@ docker build -t rock-survival:staging .
 
 #### Pushing to a registry
 
+A Docker registry is a centralized repository for storing and distributing Docker images. It allows you to share images across different environments and with other developers. Docker Hub is the most popular free registry service provided by Docker, offering public repositories for open-source projects and private repositories for proprietary code.
+
 ```bash
 # Tag for your registry
 docker tag rock-survival:v2.3.0 your-registry.com/rock-survival:v2.3.0
 
 # Push to registry
 docker push your-registry.com/rock-survival:v2.3.0
-
-# Update docker-compose.yml to use registry image
-# image: your-registry.com/rock-survival:v2.3.0
 ```
 
-#### Local registry for development
+In the case of using Docker Hub, you can use the following command to push your image to the registry:
 
 ```bash
-# Start a local registry
-docker run -d -p 5000:5000 --name registry registry:2
-
-# Tag and push to local registry
-docker tag rock-survival:v2.3.0 localhost:5000/rock-survival:v2.3.0
-docker push localhost:5000/rock-survival:v2.3.0
-
-# Use in docker-compose.yml
-# image: localhost:5000/rock-survival:v2.3.0
-```
-
-### Build optimization tips
-
-#### Use .dockerignore
-
-Create `.dockerignore` to exclude unnecessary files:
-
-```
-.git
-.gitignore
-README.md
-*.log
-node_modules
-.env
-docker-compose.yml
-```
-
-#### Cache-friendly layer ordering
-
-```dockerfile
-FROM datashield/rock-base:6.3-R4.3
-
-# Install system dependencies first (changes less frequently)
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set environment variables (changes less frequently)
-ENV ROCK_LIB /var/lib/rock/R/library
-ENV DSBASE_VERSION v6.3.2-dev
-
-# Install stable packages first
-RUN Rscript -e "remotes::install_github('datashield/dsBase', ref = '$DSBASE_VERSION', lib = '$ROCK_LIB')"
-
-# Install development packages last (changes more frequently)
-ENV DSURVIVAL_VERSION v2.3.0-dev
-RUN Rscript -e "remotes::install_github('datashield/dsSurvival', ref = '$DSURVIVAL_VERSION', lib = '$ROCK_LIB')"
-
-RUN chown -R rock $ROCK_LIB
-```
-
-### Testing custom images
-
-Test your built images manually to ensure they work correctly:
-
-```bash
-# Start the custom image
-docker run -d --name test-rock -p 8085:8085 rock-survival:v2.3.0
-
-# Test basic connectivity
-curl -f http://localhost:8085/
-
-# Test package availability
-docker exec test-rock Rscript -e "library(dsSurvival); packageVersion('dsSurvival')"
-
-# Check logs for any issues
-docker logs test-rock
-
-# Cleanup
-docker stop test-rock
-docker rm test-rock
+docker tag rock-survival:v2.3.0 your-dockerhub-username/rock-survival:v2.3.0
+docker push your-dockerhub-username/rock-survival:v2.3.0
 ```
 
 ### Troubleshooting image builds
@@ -397,56 +221,7 @@ docker run -it debug-build /bin/bash
 3. **Layer efficiently**: Order Dockerfile commands by change frequency
 4. **Test thoroughly**: Automate testing of built images
 5. **Document well**: Include package versions and build instructions
-6. **Security scanning**: Regularly scan images for vulnerabilities
-
-```bash
-# Example security scan
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-  anchore/grype:latest rock-survival:v2.3.0
-```
-
-### Integration with CI/CD
-
-#### GitHub Actions example
-
-**.github/workflows/build-rock.yml**:
-```yaml
-name: Build Rock Images
-
-on:
-  push:
-    branches: [main]
-    paths: ['dockerfiles/**']
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        profile: [survival, genomics]
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Build image
-      run: |
-        docker build -f Dockerfile.${{ matrix.profile }} \
-          -t rock-${{ matrix.profile }}:${{ github.sha }} .
-    
-    - name: Test image
-      run: ./test-rock-image.sh rock-${{ matrix.profile }}:${{ github.sha }}
-    
-    - name: Push to registry
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin
-        docker push rock-${{ matrix.profile }}:${{ github.sha }}
-```
-
-This approach gives you complete control over your DataSHIELD environments while maintaining reproducibility and version control. Custom images are particularly valuable in production deployments where consistency and reliability are paramount.
 
 ### References
 
 - DataSHIELD Docker images: [docker-rock](https://github.com/datashield/docker-rock)
-- Docker best practices: [Dockerfile Best Practices](https://docs.docker.com/develop/dev-best-practices/)
-- Multi-stage builds: [Docker Multi-stage Builds](https://docs.docker.com/develop/dev-best-practices/)
