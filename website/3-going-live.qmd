@@ -1,5 +1,5 @@
 ---
-title: "2. Going live: public deployment"
+title: "3. Going live: public deployment"
 format: html
 engine: knitr
 ---

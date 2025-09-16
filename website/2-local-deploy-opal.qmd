@@ -1,5 +1,5 @@
 ---
-title: "1. Deploying for local use"
+title: "2. Deploying opal for local use"
 format: html
 engine: knitr
 ---

@@ -13,10 +13,12 @@ book:
     - index.qmd
     - env_setup.qmd
     - up_2_speed.qmd
-    - 1-local-deploy.qmd
-    #- 2-going-live.qmd
-    - 3-add-profiles.qmd
-    - 4-creating-a-rock-server.qmd
+    - difference.qmd
+    - 1-local-deploy-armadillo.qmd
+    - 2-local-deploy-opal.qmd
+    #- 3-going-live.qmd
+    - 4-add-profiles.qmd
+    - 5-creating-a-rock-server.qmd
     # - about.qmd
   sidebar:
     logo: logo.svg
