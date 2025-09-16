@@ -1,6 +1,6 @@
 ---
 title: "1. Deploying Armadillo for local use"
-subtitle: "Armadillo + RServer + Keycloak with Docker Compose"
+subtitle: "Armadillo + RServer with Docker Compose"
 format:
   revealjs:
     theme: default
@@ -11,7 +11,7 @@ format:
 
 ## Welcome
 
-- Run **Armadillo**, **RServer**, and **Keycloak** locally with Docker Compose
+- Run **Armadillo**, **RServer**, locally with Docker Compose
 
 ---
 
@@ -56,14 +56,6 @@ local-deploy-armadillo
 
 ```
 
-## Host File Setup — Why?
-
-- Local services must resolve each other by hostname
-- Example hostnames expected by the stack:
-  - `armadillo`, `keycloak`, `rserver`
-- Add them to your hosts file so services can communicate by name
-
----
 
 
 ## Logs & Data
