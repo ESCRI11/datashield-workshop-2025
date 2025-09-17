@@ -28,6 +28,7 @@ This workshop will be delivered at the **DataSHIELD 2025 Conference** hosted by 
 
 - Review your setup: [Environment Setup](env_setup.qmd)
 - Skim the essentials: [Get up to speed](up_2_speed.qmd)
+- Opal vs Armadillo: [Difference](difference.qmd)
 
 # Workshop scope
 

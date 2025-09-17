@@ -1,0 +1,31 @@
+
+services:
+ armadillo:
+   image: molgenis/molgenis-armadillo:latest
+   platform: linux/amd64
+   environment:
+     LOGGING_CONFIG: 'classpath:logback-file.xml'
+     SPRING_SECURITY_USER_PASSWORD: 'admin'
+     SPRING_RSERVER_URL: 'http://rserver:8085'
+     DEBUG: "TRUE"
+   ports:
+     - "8000:8080"
+   volumes:
+     - ./logs:/app/logs
+     - ./data:/data
+     - /var/run/docker.sock:/var/run/docker.sock
+     - ./config:/config
+   networks:
+     - armadillo-workshop
+
+ rserver:
+   image: datashield/rock-base:latest
+   platform: linux/amd64
+   environment:
+     DEBUG: "TRUE"
+   networks:
+     - armadillo-workshop
+
+networks:
+  armadillo-workshop:
+    driver: bridge
