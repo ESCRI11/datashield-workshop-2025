@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Get up to speed – DataSHIELD Workshop: Setting up the infrastructure</title>
+<title>Armadillo vs Opal – DataSHIELD Workshop: Setting up the infrastructure</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,8 +30,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./difference.html" rel="next">
-<link href="./env_setup.html" rel="prev">
+<link href="./1-local-deploy-armadillo.html" rel="next">
+<link href="./up_2_speed.html" rel="prev">
 <link href="./favicon.ico" rel="icon">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -83,7 +83,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./up_2_speed.html"><span class="chapter-title">Get up to speed</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./difference.html"><span class="chapter-title">Armadillo vs Opal</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -143,12 +143,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./up_2_speed.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Get up to speed</span></a>
+  <a href="./up_2_speed.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Get up to speed</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./difference.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Armadillo vs Opal</span></a>
+  <a href="./difference.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Armadillo vs Opal</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -181,14 +181,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#what-youll-learn" id="toc-what-youll-learn" class="nav-link active" data-scroll-target="#what-youll-learn">What you’ll learn</a></li>
-  <li><a href="#audience-and-setup" id="toc-audience-and-setup" class="nav-link" data-scroll-target="#audience-and-setup">Audience and setup</a></li>
-  <li><a href="#prerequisites-checklist-please-skim-before-we-start" id="toc-prerequisites-checklist-please-skim-before-we-start" class="nav-link" data-scroll-target="#prerequisites-checklist-please-skim-before-we-start">Prerequisites checklist (please skim before we start)</a></li>
-  <li><a href="#target-platforms-well-mention" id="toc-target-platforms-well-mention" class="nav-link" data-scroll-target="#target-platforms-well-mention">Target platforms we’ll mention</a></li>
-  <li><a href="#what-well-deploy-at-a-glance" id="toc-what-well-deploy-at-a-glance" class="nav-link" data-scroll-target="#what-well-deploy-at-a-glance">What we’ll deploy (at a glance)</a></li>
-  <li><a href="#prereading-short-and-optional" id="toc-prereading-short-and-optional" class="nav-link" data-scroll-target="#prereading-short-and-optional">Pre‑reading (short and optional)</a></li>
-  <li><a href="#what-we-will-not-cover" id="toc-what-we-will-not-cover" class="nav-link" data-scroll-target="#what-we-will-not-cover">What we will not cover</a></li>
-  <li><a href="#outcomes" id="toc-outcomes" class="nav-link" data-scroll-target="#outcomes">Outcomes</a></li>
+  <li><a href="#what-they-are" id="toc-what-they-are" class="nav-link active" data-scroll-target="#what-they-are">What they are</a></li>
+  <li><a href="#architecture-storage" id="toc-architecture-storage" class="nav-link" data-scroll-target="#architecture-storage">Architecture &amp; Storage</a></li>
+  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a></li>
+  <li><a href="#pros-cons" id="toc-pros-cons" class="nav-link" data-scroll-target="#pros-cons">Pros &amp; Cons</a></li>
+  <li><a href="#when-to-use" id="toc-when-to-use" class="nav-link" data-scroll-target="#when-to-use">When to use</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ESCRI11/datashield-workshop-2025/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -197,7 +194,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-title">Get up to speed</span></h1>
+<h1 class="title"><span class="chapter-title">Armadillo vs Opal</span></h1>
 </div>
 
 
@@ -214,112 +211,91 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="cell">
-<style type="text/css">
-p {
-  text-align: justify
-}
-</style>
-</div>
-<p>This workshop is a hands-on primer on installing and running secure, federated DataSHIELD backends with Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self-signed TLS, and then show how to go live with Let’s Encrypt.</p>
-<section id="what-youll-learn" class="level3">
-<h3 class="anchored" data-anchor-id="what-youll-learn">What you’ll learn</h3>
+<section id="what-they-are" class="level2">
+<h2 class="anchored" data-anchor-id="what-they-are">What they are</h2>
 <ul>
-<li>Deploy Opal and Armadillo using Docker Compose (no Kubernetes)</li>
-<li>Run Nginx as a reverse proxy: local self‑signed → Let’s Encrypt</li>
-<li>Practical Linux/SSH and terminal workflows (great for cloud)</li>
-<li>Optional: lightweight host monitoring with Telegraf + Grafana (time permitting)</li>
-</ul>
-</section>
-<section id="audience-and-setup" class="level3">
-<h3 class="anchored" data-anchor-id="audience-and-setup">Audience and setup</h3>
+<li><strong>Opal</strong>
 <ul>
-<li>Skill level: beginner-friendly. We’ll explain each step as we go.</li>
-<li>Follow‑along encouraged on your laptop (Mac/Windows/Linux). If you prefer to watch, you’ll still get all commands and files.</li>
-</ul>
-</section>
-<section id="prerequisites-checklist-please-skim-before-we-start" class="level3">
-<h3 class="anchored" data-anchor-id="prerequisites-checklist-please-skim-before-we-start">Prerequisites checklist (please skim before we start)</h3>
-<ul>
-<li>Laptop: macOS (Apple Silicon is fine), Windows 10/11, or Linux</li>
-<li>Containers:
-<ul>
-<li>macOS/Windows: install Docker Desktop and ensure both <code>docker</code> and <code>docker compose</code> work
-<ul>
-<li>Docker Desktop: <a href="https://docs.docker.com/desktop/">docs</a></li>
+<li>Mature platform by OBiBa</li>
+<li>Full data management: storage, harmonisation, metadata, cataloguing</li>
+<li>Widely used in DataSHIELD documentation and consortia</li>
 </ul></li>
-<li>Linux: install Docker Engine and Compose v2 plugin (we’ll use <code>docker compose</code>, not <code>docker-compose</code>)
+<li><strong>Armadillo</strong>
 <ul>
-<li>Docker Engine install: <a href="https://docs.docker.com/engine/install/">docs</a></li>
-<li>Compose v2 guidance: <a href="https://docs.docker.com/compose/releases/migrate/">migrate</a></li>
-</ul></li>
-</ul></li>
-<li>Terminal + SSH: basic comfort with shell, <code>ssh user@host</code></li>
-<li>Ports:
-<ul>
-<li>Local: allow Docker to bind 80/443 (stop other services using these ports)</li>
-<li>Cloud (optional): if testing live TLS, ensure 22/80/443 are open</li>
-</ul></li>
-<li>Domain (optional, for live demo): have a test DNS name ready if you want to issue real certificates with Let’s Encrypt; otherwise we’ll stick to self‑signed locally</li>
-</ul>
-</section>
-<section id="target-platforms-well-mention" class="level3">
-<h3 class="anchored" data-anchor-id="target-platforms-well-mention">Target platforms we’ll mention</h3>
-<ul>
-<li>On‑prem demo first; cloud notes included</li>
-<li>Cloud suggestion: Ubuntu 24.04 LTS on x86_64 for quick starts</li>
-</ul>
-</section>
-<section id="what-well-deploy-at-a-glance" class="level3">
-<h3 class="anchored" data-anchor-id="what-well-deploy-at-a-glance">What we’ll deploy (at a glance)</h3>
-<ul>
-<li>Reverse proxy: Nginx</li>
-<li>DataSHIELD backends: Opal and Armadillo (latest images)</li>
-<li>R server (Rock) alongside Opal for DataSHIELD R packages</li>
-<li>Stage 1 (local): self‑signed TLS</li>
-<li>Stage 2 (live): DNS + Certbot for Let’s Encrypt on Ubuntu</li>
-</ul>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Tip
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>No prior sysadmin experience required. We’ll keep commands copy‑pasteable and explain the “why” briefly as we go.</p>
-</div>
-</div>
-</section>
-<section id="prereading-short-and-optional" class="level3">
-<h3 class="anchored" data-anchor-id="prereading-short-and-optional">Pre‑reading (short and optional)</h3>
-<ul>
-<li>DataSHIELD overview paper: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4276062/">International Journal of Epidemiology</a></li>
-<li>Opal (DataSHIELD server) overview: <a href="https://www.obiba.org/pages/products/opal/">OBiBa Opal</a></li>
-<li>DataSHIELD packages documentation: <a href="https://cran.datashield.org/web/">cran.datashield.org</a></li>
-<li>Docker basics for this workshop:
-<ul>
-<li>Docker Desktop (Mac/Windows): <a href="https://docs.docker.com/desktop/">docs</a></li>
-<li>Compose v2 usage/migration: <a href="https://docs.docker.com/compose/releases/migrate/">docs</a></li>
-</ul></li>
-<li>Let’s Encrypt on Ubuntu + Nginx (for Stage 2):
-<ul>
-<li>Certbot + Nginx (Ubuntu): <a href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04">DigitalOcean guide</a></li>
+<li>Lightweight server by MOLGENIS team (Support &amp; Development)</li>
+<li>Built specifically for DataSHIELD federated analysis</li>
+<li>Easier deployment, fewer dependencies</li>
 </ul></li>
 </ul>
 </section>
-<section id="what-we-will-not-cover" class="level3">
-<h3 class="anchored" data-anchor-id="what-we-will-not-cover">What we will not cover</h3>
+<section id="architecture-storage" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-storage">Architecture &amp; Storage</h2>
 <ul>
-<li>Kubernetes, advanced identity (OIDC/Keycloak), or firewall hardening beyond basics</li>
-<li>Data layer specifics (databases/object storage) for Armadillo—kept out to stay focused on deployment flow</li>
+<li><strong>Opal</strong>
+<ul>
+<li>Uses relational DBs (MySQL, PostgreSQL, MariaDB) or MongoDB</li>
+<li>Stores data and metadata in databases</li>
+<li>Supports complex workflows</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>Stores data on the filesystem (e.g.&nbsp;Parquet files)</li>
+<li>Uploads via UI or R package</li>
+<li>Simpler, less infrastructure heavy</li>
+</ul></li>
 </ul>
 </section>
-<section id="outcomes" class="level3">
-<h3 class="anchored" data-anchor-id="outcomes">Outcomes</h3>
-<p>By the end, you’ll have a working local deployment (Opal/Armadillo behind Nginx with TLS) and a clear path to promote it to a live DNS‑backed setup with Let’s Encrypt.</p>
+<section id="features" class="level2">
+<h2 class="anchored" data-anchor-id="features">Features</h2>
+<ul>
+<li><strong>Opal</strong>
+<ul>
+<li>Rich functionality: harmonisation, metadata, cataloguing</li>
+<li>Multiple R servers, horizontal scaling</li>
+<li>Advanced admin and access control</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>Focused on core federated analysis features</li>
+<li>Profiles: named/versioned DS package collections</li>
+<li>Permissions and function whitelisting</li>
+<li>Lightweight and user-friendly</li>
+</ul></li>
+</ul>
+</section>
+<section id="pros-cons" class="level2">
+<h2 class="anchored" data-anchor-id="pros-cons">Pros &amp; Cons</h2>
+<ul>
+<li><strong>Opal</strong>
+<ul>
+<li>✅ Mature and feature-rich</li>
+<li>✅ Good for large, complex infrastructures</li>
+<li>❌ Higher complexity and overhead</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>✅ Lightweight, quick to deploy</li>
+<li>✅ Easier for cohorts with modest resources</li>
+<li>❌ Fewer features (e.g.&nbsp;less advanced harmonisation)</li>
+<li>❌ Newer, still catching up in some areas</li>
+</ul></li>
+</ul>
+</section>
+<section id="when-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use">When to use</h2>
+<ul>
+<li>Choose <strong>Opal</strong> if:
+<ul>
+<li>You need full data management, metadata and harmonisation</li>
+<li>You operate in a large consortium with complex workflows</li>
+</ul></li>
+<li>Choose <strong>Armadillo</strong> if:
+<ul>
+<li>You want lightweight, easy deployment</li>
+<li>You mainly need secure federated analysis</li>
+<li>Your team has limited IT resources and want Molgenis Support</li>
+</ul></li>
+</ul>
 
 
 </section>
@@ -747,13 +723,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./env_setup.html" class="pagination-link" aria-label="Environment Setup">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Environment Setup</span></span>
+      <a href="./up_2_speed.html" class="pagination-link" aria-label="Get up to speed">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Get up to speed</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./difference.html" class="pagination-link" aria-label="Armadillo vs Opal">
-        <span class="nav-page-text"><span class="chapter-title">Armadillo vs Opal</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./1-local-deploy-armadillo.html" class="pagination-link" aria-label="1. Deploying Armadillo for local use">
+        <span class="nav-page-text"><span class="chapter-title">1. Deploying Armadillo for local use</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
