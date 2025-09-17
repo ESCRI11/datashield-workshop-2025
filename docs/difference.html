@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Dick Postma and Xavier Escribà Montagut">
 
-<title>DataSHIELD Workshop: Setting up the infrastructure</title>
+<title>Armadillo vs Opal – DataSHIELD Workshop: Setting up the infrastructure</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -31,7 +30,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./env_setup.html" rel="next">
+<link href="./1-local-deploy-armadillo.html" rel="next">
+<link href="./up_2_speed.html" rel="prev">
 <link href="./favicon.ico" rel="icon">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -83,7 +83,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html"><span class="chapter-title">Introduction</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./difference.html"><span class="chapter-title">Armadillo vs Opal</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -133,7 +133,7 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Introduction</span></a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Introduction</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -148,7 +148,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./difference.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Armadillo vs Opal</span></a>
+  <a href="./difference.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Armadillo vs Opal</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -181,14 +181,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#workshop-details" id="toc-workshop-details" class="nav-link" data-scroll-target="#workshop-details">Workshop Details</a></li>
-  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting started</a></li>
-  <li><a href="#workshop-scope" id="toc-workshop-scope" class="nav-link" data-scroll-target="#workshop-scope">Workshop scope</a></li>
-  <li><a href="#who-this-is-for" id="toc-who-this-is-for" class="nav-link" data-scroll-target="#who-this-is-for">Who this is for</a></li>
-  <li><a href="#prerequisites-summary" id="toc-prerequisites-summary" class="nav-link" data-scroll-target="#prerequisites-summary">Prerequisites (summary)</a></li>
-  <li><a href="#schedule" id="toc-schedule" class="nav-link" data-scroll-target="#schedule">Schedule</a></li>
-  <li><a href="#credits" id="toc-credits" class="nav-link" data-scroll-target="#credits">Credits</a></li>
+  <li><a href="#what-they-are" id="toc-what-they-are" class="nav-link active" data-scroll-target="#what-they-are">What they are</a></li>
+  <li><a href="#architecture-storage" id="toc-architecture-storage" class="nav-link" data-scroll-target="#architecture-storage">Architecture &amp; Storage</a></li>
+  <li><a href="#features" id="toc-features" class="nav-link" data-scroll-target="#features">Features</a></li>
+  <li><a href="#pros-cons" id="toc-pros-cons" class="nav-link" data-scroll-target="#pros-cons">Pros &amp; Cons</a></li>
+  <li><a href="#when-to-use" id="toc-when-to-use" class="nav-link" data-scroll-target="#when-to-use">When to use</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ESCRI11/datashield-workshop-2025/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -197,19 +194,13 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">DataSHIELD Workshop: Setting up the infrastructure</h1>
+<h1 class="title"><span class="chapter-title">Armadillo vs Opal</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Dick Postma and Xavier Escribà Montagut </p>
-          </div>
-  </div>
     
   
     
@@ -220,65 +211,91 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<div class="cell">
-<style type="text/css">
-p {
-  text-align: justify
-}
-</style>
-</div>
-<div style="display: flex; justify-content: space-around;">
-<p><img src="figures/logo1.png" class="img-fluid" style="height: 81px; margin-right: 20px;" alt="Image 1"> <img src="figures/logo2.png" class="img-fluid" style="height: 81px; margin-left: 20px;" alt="Image 2"></p>
-</div>
-<section id="introduction" class="level1">
-<h1>Introduction</h1>
-<p>This site hosts materials for a hands‑on workshop on deploying and managing Opal and Armadillo. We will cover local deploy of the infrastructure, manage of profiles and profile creation. As extra material we will have a look at strategies of monitoring of the infrastructure. Expect practical Linux/SSH usage from a terminal and a copy‑pasteable flow you can follow on your laptop. The materials of this workshop, especially the live deploy part are applicable to cloud deployments as well.</p>
-</section>
-<section id="workshop-details" class="level1">
-<h1>Workshop Details</h1>
-<p>This workshop will be delivered at the <strong>DataSHIELD 2025 Conference</strong> hosted by the SIB Swiss Institute of Bioinformatics at the University of Lausanne (UniL), Switzerland, on <strong>Tuesday, September 23rd from 13:30 to 16:30</strong> at room <strong>POL-338</strong> (TBC).</p>
-</section>
-<section id="getting-started" class="level1">
-<h1>Getting started</h1>
+<section id="what-they-are" class="level2">
+<h2 class="anchored" data-anchor-id="what-they-are">What they are</h2>
 <ul>
-<li>Review your setup: <a href="./env_setup.html">Environment Setup</a></li>
-<li>Skim the essentials: <a href="./up_2_speed.html">Get up to speed</a></li>
-<li>Opal vs Armadillo: <a href="./difference.html">Difference</a></li>
+<li><strong>Opal</strong>
+<ul>
+<li>Mature platform by OBiBa</li>
+<li>Full data management: storage, harmonisation, metadata, cataloguing</li>
+<li>Widely used in DataSHIELD documentation and consortia</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>Lightweight server by MOLGENIS team (Support &amp; Development)</li>
+<li>Built specifically for DataSHIELD federated analysis</li>
+<li>Easier deployment, fewer dependencies</li>
+</ul></li>
 </ul>
 </section>
-<section id="workshop-scope" class="level1">
-<h1>Workshop scope</h1>
+<section id="architecture-storage" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-storage">Architecture &amp; Storage</h2>
 <ul>
-<li>Deploy Opal and Armadillo with Docker Compose (no Kubernetes)</li>
-<li>Nginx reverse proxy: go live with Let’s Encrypt</li>
-<li>Basic Linux/SSH workflows suitable for on‑prem and cloud</li>
-<li>Optional: lightweight monitoring with Telegraf/Prometheus + Grafana (time permitting)</li>
+<li><strong>Opal</strong>
+<ul>
+<li>Uses relational DBs (MySQL, PostgreSQL, MariaDB) or MongoDB</li>
+<li>Stores data and metadata in databases</li>
+<li>Supports complex workflows</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>Stores data on the filesystem (e.g.&nbsp;Parquet files)</li>
+<li>Uploads via UI or R package</li>
+<li>Simpler, less infrastructure heavy</li>
+</ul></li>
 </ul>
 </section>
-<section id="who-this-is-for" class="level1">
-<h1>Who this is for</h1>
+<section id="features" class="level2">
+<h2 class="anchored" data-anchor-id="features">Features</h2>
 <ul>
-<li>Beginners to sysadmin tasks; we explain each step</li>
-<li>Attendees on macOS (Apple Silicon ok), Windows (Docker Desktop/WSL2), or Linux</li>
-<li>Follow‑along is encouraged but not mandatory</li>
+<li><strong>Opal</strong>
+<ul>
+<li>Rich functionality: harmonisation, metadata, cataloguing</li>
+<li>Multiple R servers, horizontal scaling</li>
+<li>Advanced admin and access control</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>Focused on core federated analysis features</li>
+<li>Profiles: named/versioned DS package collections</li>
+<li>Permissions and function whitelisting</li>
+<li>Lightweight and user-friendly</li>
+</ul></li>
 </ul>
 </section>
-<section id="prerequisites-summary" class="level1">
-<h1>Prerequisites (summary)</h1>
-<p>See details in <a href="./env_setup.html">Environment Setup</a>. In short:</p>
+<section id="pros-cons" class="level2">
+<h2 class="anchored" data-anchor-id="pros-cons">Pros &amp; Cons</h2>
 <ul>
-<li>Docker Desktop (Mac/Windows) or Docker Engine + Compose v2 (Linux)</li>
-<li>Terminal + SSH access; ability to open ports 80/443 locally</li>
-<li>Optional domain name if you want to test live certificates</li>
+<li><strong>Opal</strong>
+<ul>
+<li>✅ Mature and feature-rich</li>
+<li>✅ Good for large, complex infrastructures</li>
+<li>❌ Higher complexity and overhead</li>
+</ul></li>
+<li><strong>Armadillo</strong>
+<ul>
+<li>✅ Lightweight, quick to deploy</li>
+<li>✅ Easier for cohorts with modest resources</li>
+<li>❌ Fewer features (e.g.&nbsp;less advanced harmonisation)</li>
+<li>❌ Newer, still catching up in some areas</li>
+</ul></li>
 </ul>
 </section>
-<section id="schedule" class="level1">
-<h1>Schedule</h1>
-<p>To be announced.</p>
-</section>
-<section id="credits" class="level1">
-<h1>Credits</h1>
-<p>Materials developed by Dick Postma (Molgenis) and Xavier Escribà Montagut (BigOmics Analytics SA).</p>
+<section id="when-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use">When to use</h2>
+<ul>
+<li>Choose <strong>Opal</strong> if:
+<ul>
+<li>You need full data management, metadata and harmonisation</li>
+<li>You operate in a large consortium with complex workflows</li>
+</ul></li>
+<li>Choose <strong>Armadillo</strong> if:
+<ul>
+<li>You want lightweight, easy deployment</li>
+<li>You mainly need secure federated analysis</li>
+<li>Your team has limited IT resources and want Molgenis Support</li>
+</ul></li>
+</ul>
 
 
 </section>
@@ -706,10 +723,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./up_2_speed.html" class="pagination-link" aria-label="Get up to speed">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Get up to speed</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./env_setup.html" class="pagination-link" aria-label="Environment Setup">
-        <span class="nav-page-text"><span class="chapter-title">Environment Setup</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./1-local-deploy-armadillo.html" class="pagination-link" aria-label="1. Deploying Armadillo for local use">
+        <span class="nav-page-text"><span class="chapter-title">1. Deploying Armadillo for local use</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

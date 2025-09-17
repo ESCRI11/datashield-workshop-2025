@@ -30,7 +30,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./1-local-deploy.html" rel="next">
+<link href="./difference.html" rel="next">
 <link href="./env_setup.html" rel="prev">
 <link href="./favicon.ico" rel="icon">
 <script src="site_libs/quarto-html/quarto.js"></script>
@@ -148,17 +148,27 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./1-local-deploy.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1. Deploying for local use</span></a>
+  <a href="./difference.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Armadillo vs Opal</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./3-add-profiles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Managing profiles</span></a>
+  <a href="./1-local-deploy-armadillo.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">1. Deploying Armadillo for local use</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./4-creating-a-rock-server.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Creating custom Rock server images</span></a>
+  <a href="./2-local-deploy-opal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Deploying Opal for local use</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./4-add-profiles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Managing profiles</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./5-creating-a-rock-server.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Creating custom Rock server images</span></a>
   </div>
 </li>
     </ul>
@@ -172,8 +182,9 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#what-youll-learn" id="toc-what-youll-learn" class="nav-link active" data-scroll-target="#what-youll-learn">What you’ll learn</a></li>
+  <li><a href="#course-structure" id="toc-course-structure" class="nav-link" data-scroll-target="#course-structure">Course structure</a></li>
   <li><a href="#audience-and-setup" id="toc-audience-and-setup" class="nav-link" data-scroll-target="#audience-and-setup">Audience and setup</a></li>
-  <li><a href="#prerequisites-checklist-please-skim-before-we-start" id="toc-prerequisites-checklist-please-skim-before-we-start" class="nav-link" data-scroll-target="#prerequisites-checklist-please-skim-before-we-start">Prerequisites checklist (please skim before we start)</a></li>
+  <li><a href="#prerequisites-checklist" id="toc-prerequisites-checklist" class="nav-link" data-scroll-target="#prerequisites-checklist">Prerequisites checklist</a></li>
   <li><a href="#target-platforms-well-mention" id="toc-target-platforms-well-mention" class="nav-link" data-scroll-target="#target-platforms-well-mention">Target platforms we’ll mention</a></li>
   <li><a href="#what-well-deploy-at-a-glance" id="toc-what-well-deploy-at-a-glance" class="nav-link" data-scroll-target="#what-well-deploy-at-a-glance">What we’ll deploy (at a glance)</a></li>
   <li><a href="#prereading-short-and-optional" id="toc-prereading-short-and-optional" class="nav-link" data-scroll-target="#prereading-short-and-optional">Pre‑reading (short and optional)</a></li>
@@ -211,15 +222,28 @@ p {
 }
 </style>
 </div>
-<p>This workshop is a hands-on primer on installing and running secure, federated DataSHIELD backends with Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self-signed TLS, and then show how to go live with Let’s Encrypt.</p>
+<p>This workshop is a hands-on primer on deploying secure, federated DataSHIELD backends with Docker Compose. We will focus on Opal and Armadillo deployments with Rock servers; covering local development, production deployment with TLS, and profile management.</p>
 <section id="what-youll-learn" class="level3">
 <h3 class="anchored" data-anchor-id="what-youll-learn">What you’ll learn</h3>
 <ul>
-<li>Deploy Opal and Armadillo using Docker Compose (no Kubernetes)</li>
-<li>Run Nginx as a reverse proxy: local self‑signed → Let’s Encrypt</li>
+<li>Deploy Opal with Rock servers using Docker Compose (local → production)</li>
+<li>Deploy Armadillo as an alternative DataSHIELD backend</li>
+<li>Configure Nginx reverse proxy: local self‑signed → Let’s Encrypt</li>
+<li>Manage multiple DataSHIELD profiles for different research contexts</li>
+<li>Build custom Rock server images with specific package versions</li>
 <li>Practical Linux/SSH and terminal workflows (great for cloud)</li>
-<li>Optional: lightweight host monitoring with Telegraf + Grafana (time permitting)</li>
+<li>Production deployment strategies: IT-managed vs self-managed</li>
 </ul>
+</section>
+<section id="course-structure" class="level3">
+<h3 class="anchored" data-anchor-id="course-structure">Course structure</h3>
+<ol type="1">
+<li><strong>Armadillo local deployment</strong>: Quick start with Armadillo + RServer</li>
+<li><strong>Opal local deployment</strong>: Core focus - Opal + Rock + MongoDB locally</li>
+<li><strong>Going live</strong>: Production deployment with Nginx, TLS certificates, and DNS</li>
+<li><strong>Managing profiles</strong>: Multiple DataSHIELD environments</li>
+<li><strong>Custom Rock images</strong>: Building reproducible, version-controlled server images</li>
+</ol>
 </section>
 <section id="audience-and-setup" class="level3">
 <h3 class="anchored" data-anchor-id="audience-and-setup">Audience and setup</h3>
@@ -228,20 +252,20 @@ p {
 <li>Follow‑along encouraged on your laptop (Mac/Windows/Linux). If you prefer to watch, you’ll still get all commands and files.</li>
 </ul>
 </section>
-<section id="prerequisites-checklist-please-skim-before-we-start" class="level3">
-<h3 class="anchored" data-anchor-id="prerequisites-checklist-please-skim-before-we-start">Prerequisites checklist (please skim before we start)</h3>
+<section id="prerequisites-checklist" class="level3">
+<h3 class="anchored" data-anchor-id="prerequisites-checklist">Prerequisites checklist</h3>
 <ul>
 <li>Laptop: macOS (Apple Silicon is fine), Windows 10/11, or Linux</li>
 <li>Containers:
 <ul>
-<li>macOS/Windows: install Docker Desktop and ensure both <code>docker</code> and <code>docker compose</code> work
+<li>macOS/Windows: install Docker Desktop and ensure both <code>docker</code> and <code>docker-compose</code> work
 <ul>
 <li>Docker Desktop: <a href="https://docs.docker.com/desktop/">docs</a></li>
 </ul></li>
-<li>Linux: install Docker Engine and Compose v2 plugin (we’ll use <code>docker compose</code>, not <code>docker-compose</code>)
+<li>Linux: install Docker Engine and Docker Compose (we’ll use <code>docker-compose</code>)
 <ul>
 <li>Docker Engine install: <a href="https://docs.docker.com/engine/install/">docs</a></li>
-<li>Compose v2 guidance: <a href="https://docs.docker.com/compose/releases/migrate/">migrate</a></li>
+<li>Docker Compose install: <a href="https://docs.docker.com/compose/install/">docs</a></li>
 </ul></li>
 </ul></li>
 <li>Terminal + SSH: basic comfort with shell, <code>ssh user@host</code></li>
@@ -262,12 +286,28 @@ p {
 </section>
 <section id="what-well-deploy-at-a-glance" class="level3">
 <h3 class="anchored" data-anchor-id="what-well-deploy-at-a-glance">What we’ll deploy (at a glance)</h3>
+<section id="opal-stack" class="level4">
+<h4 class="anchored" data-anchor-id="opal-stack">Opal stack</h4>
 <ul>
-<li>Reverse proxy: Nginx</li>
-<li>DataSHIELD backends: Opal and Armadillo (latest images)</li>
-<li>R server (Rock) alongside Opal for DataSHIELD R packages</li>
-<li>Stage 1 (local): self‑signed TLS</li>
-<li>Stage 2 (live): DNS + Certbot for Let’s Encrypt on Ubuntu</li>
+<li><strong>Local development</strong>: Opal/Armadillo + Rock + MongoDB with HTTP access</li>
+<li><strong>Production deployment</strong>: Nginx reverse proxy with Let’s Encrypt TLS</li>
+<li><strong>Multiple profiles</strong>: Default, survival analysis, genomics environments</li>
+<li><strong>Custom images</strong>: Version-controlled Rock servers with specific packages</li>
+</ul>
+</section>
+<section id="armadillo-stack" class="level4">
+<h4 class="anchored" data-anchor-id="armadillo-stack">Armadillo stack</h4>
+<ul>
+<li><strong>Armadillo server</strong>: Alternative DataSHIELD backend</li>
+<li><strong>RServer integration</strong>: DataSHIELD package execution environment</li>
+</ul>
+</section>
+<section id="deployment-progression" class="level4">
+<h4 class="anchored" data-anchor-id="deployment-progression">Deployment progression</h4>
+<ul>
+<li>Stage 1 (local): HTTP access for development and testing</li>
+<li>Stage 2 (production): HTTPS with proper certificates and DNS</li>
+<li>Stage 3 (advanced): Multiple profiles and custom package management</li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -283,18 +323,20 @@ Tip
 </div>
 </div>
 </section>
+</section>
 <section id="prereading-short-and-optional" class="level3">
 <h3 class="anchored" data-anchor-id="prereading-short-and-optional">Pre‑reading (short and optional)</h3>
 <ul>
 <li>DataSHIELD overview paper: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4276062/">International Journal of Epidemiology</a></li>
 <li>Opal (DataSHIELD server) overview: <a href="https://www.obiba.org/pages/products/opal/">OBiBa Opal</a></li>
+<li>Armadillo documentation: <a href="https://molgenis.github.io/molgenis-service-armadillo/">MOLGENIS Armadillo</a></li>
 <li>DataSHIELD packages documentation: <a href="https://cran.datashield.org/web/">cran.datashield.org</a></li>
 <li>Docker basics for this workshop:
 <ul>
 <li>Docker Desktop (Mac/Windows): <a href="https://docs.docker.com/desktop/">docs</a></li>
 <li>Compose v2 usage/migration: <a href="https://docs.docker.com/compose/releases/migrate/">docs</a></li>
 </ul></li>
-<li>Let’s Encrypt on Ubuntu + Nginx (for Stage 2):
+<li>Let’s Encrypt on Ubuntu + Nginx (for production deployment):
 <ul>
 <li>Certbot + Nginx (Ubuntu): <a href="https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04">DigitalOcean guide</a></li>
 </ul></li>
@@ -303,13 +345,22 @@ Tip
 <section id="what-we-will-not-cover" class="level3">
 <h3 class="anchored" data-anchor-id="what-we-will-not-cover">What we will not cover</h3>
 <ul>
-<li>Kubernetes, advanced identity (OIDC/Keycloak), or firewall hardening beyond basics</li>
-<li>Data layer specifics (databases/object storage) for Armadillo—kept out to stay focused on deployment flow</li>
+<li>Kubernetes deployments (we focus on Docker Compose)</li>
+<li>Advanced identity management (OIDC/Keycloak)</li>
+<li>Firewall hardening beyond TLS basics</li>
+<li>Advanced monitoring and logging (though we will see mention Telegraf/Prometheus + Grafana if time permits)</li>
 </ul>
 </section>
 <section id="outcomes" class="level3">
 <h3 class="anchored" data-anchor-id="outcomes">Outcomes</h3>
-<p>By the end, you’ll have a working local deployment (Opal/Armadillo behind Nginx with TLS) and a clear path to promote it to a live DNS‑backed setup with Let’s Encrypt.</p>
+<p>By the end, you’ll have:</p>
+<ul>
+<li>A working local Opal/Armadillo deployment for development and testing</li>
+<li>Understanding of production deployment options (IT-managed vs self-managed)</li>
+<li>Knowledge of DataSHIELD profile management for different research contexts</li>
+<li>Skills to build and maintain custom Rock server images</li>
+<li>A clear path from development to production deployment</li>
+</ul>
 
 
 </section>
@@ -742,8 +793,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./1-local-deploy.html" class="pagination-link" aria-label="1. Deploying for local use">
-        <span class="nav-page-text"><span class="chapter-title">1. Deploying for local use</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./difference.html" class="pagination-link" aria-label="Armadillo vs Opal">
+        <span class="nav-page-text"><span class="chapter-title">Armadillo vs Opal</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

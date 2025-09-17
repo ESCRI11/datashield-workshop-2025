@@ -1,0 +1,94 @@
+---
+title: "1. Deploying Armadillo for local use"
+subtitle: "Armadillo + RServer with Docker Compose"
+format:
+  revealjs:
+    theme: default
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+---
+
+## Welcome
+
+- Run **Armadillo**, **RServer**, locally with Docker Compose
+
+---
+
+## Quickstart
+
+```
+docker compose up
+```
+
+- Logs and data are stored in `./logs` and `./data`
+
+---
+
+### Services and Roles 
+
+- **Armadillo** → http://localhost:8000
+  - Main DataSHIELD server and admin UI. (With admin/admin as user)
+- **RServer** → http://localhost:6311
+  - DataSHIELD packages; 
+
+---
+
+### Goal
+
+Deploy Armadillo locally on your laptop using Docker Compose.
+
+References :
+
+- Armadillo [Quick Setup](https://molgenis.github.io/molgenis-service-armadillo/pages/install_management/armadillo_docker_install/)
+
+---
+
+### Files layout
+
+```
+local-deploy-armadillo
+├── config 
+    ├── application.yml ( Main armadillo configuration ) 
+├── data                ( Local storage ) 
+├── docker-compose.yml 
+└── logs                ( Armadillo logfiles ) 
+
+```
+
+
+
+## Logs & Data
+
+- Runtime logs and persistent test data are kept under:
+  - `./logs`
+  - `./data`
+
+---
+
+## Troubleshooting
+
+- **Reset the stack**
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+---
+
+## Kubernetes / Production
+
+- Helm charts available:  
+  https://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart
+- DataSHIELD profiles maintained in Helm (private repo for some charts)
+- If you need help or want to contribute contact:
+  - Email: support@molgenis.org
+  - Slack: join the `#Armadillo-support` channel (DataSHIELD Slack)
+
+---
+
+## Notes
+
+- This quickstart is intended for local development and testing
+- For production deployments prefer systemd or Kubernetes/Helm configurations
+

@@ -11,60 +11,89 @@ p {
 }
 ```
 
-This workshop is a hands-on primer on installing and running secure, federated DataSHIELD backends with Docker Compose. We will deploy Opal and Armadillo behind an Nginx reverse proxy, start locally with self-signed TLS, and then show how to go live with Let’s Encrypt.
+This workshop is a hands-on primer on deploying secure, federated DataSHIELD backends with Docker Compose. We will focus on Opal and Armadillo deployments with Rock servers; covering local development, production deployment with TLS, and profile management.
 
-### What you’ll learn
-- Deploy Opal and Armadillo using Docker Compose (no Kubernetes)
-- Run Nginx as a reverse proxy: local self‑signed → Let’s Encrypt
+### What you'll learn
+- Deploy Opal with Rock servers using Docker Compose (local → production)
+- Deploy Armadillo as an alternative DataSHIELD backend
+- Configure Nginx reverse proxy: local self‑signed → Let's Encrypt
+- Manage multiple DataSHIELD profiles for different research contexts
+- Build custom Rock server images with specific package versions
 - Practical Linux/SSH and terminal workflows (great for cloud)
-- Optional: lightweight host monitoring with Telegraf + Grafana (time permitting)
+- Production deployment strategies: IT-managed vs self-managed
+
+### Course structure
+1. **Armadillo local deployment**: Quick start with Armadillo + RServer
+2. **Opal local deployment**: Core focus - Opal + Rock + MongoDB locally
+3. **Going live**: Production deployment with Nginx, TLS certificates, and DNS
+4. **Managing profiles**: Multiple DataSHIELD environments
+5. **Custom Rock images**: Building reproducible, version-controlled server images
 
 ### Audience and setup
-- Skill level: beginner-friendly. We’ll explain each step as we go.
-- Follow‑along encouraged on your laptop (Mac/Windows/Linux). If you prefer to watch, you’ll still get all commands and files.
+- Skill level: beginner-friendly. We'll explain each step as we go.
+- Follow‑along encouraged on your laptop (Mac/Windows/Linux). If you prefer to watch, you'll still get all commands and files.
 
-### Prerequisites checklist (please skim before we start)
+### Prerequisites checklist
 - Laptop: macOS (Apple Silicon is fine), Windows 10/11, or Linux
 - Containers:
-  - macOS/Windows: install Docker Desktop and ensure both `docker` and `docker compose` work
+  - macOS/Windows: install Docker Desktop and ensure both `docker` and `docker-compose` work
     - Docker Desktop: [docs](https://docs.docker.com/desktop/)
-  - Linux: install Docker Engine and Compose v2 plugin (we’ll use `docker compose`, not `docker-compose`)
+  - Linux: install Docker Engine and Docker Compose (we'll use `docker-compose`)
     - Docker Engine install: [docs](https://docs.docker.com/engine/install/)
-    - Compose v2 guidance: [migrate](https://docs.docker.com/compose/releases/migrate/)
+    - Docker Compose install: [docs](https://docs.docker.com/compose/install/)
 - Terminal + SSH: basic comfort with shell, `ssh user@host`
 - Ports:
   - Local: allow Docker to bind 80/443 (stop other services using these ports)
   - Cloud (optional): if testing live TLS, ensure 22/80/443 are open
-- Domain (optional, for live demo): have a test DNS name ready if you want to issue real certificates with Let’s Encrypt; otherwise we’ll stick to self‑signed locally
+- Domain (optional, for live demo): have a test DNS name ready if you want to issue real certificates with Let's Encrypt; otherwise we'll stick to self‑signed locally
 
-### Target platforms we’ll mention
+### Target platforms we'll mention
 - On‑prem demo first; cloud notes included
 - Cloud suggestion: Ubuntu 24.04 LTS on x86_64 for quick starts
 
-### What we’ll deploy (at a glance)
-- Reverse proxy: Nginx
-- DataSHIELD backends: Opal and Armadillo (latest images)
-- R server (Rock) alongside Opal for DataSHIELD R packages
-- Stage 1 (local): self‑signed TLS
-- Stage 2 (live): DNS + Certbot for Let’s Encrypt on Ubuntu
+### What we'll deploy (at a glance)
+
+#### Opal stack
+- **Local development**: Opal/Armadillo + Rock + MongoDB with HTTP access
+- **Production deployment**: Nginx reverse proxy with Let's Encrypt TLS
+- **Multiple profiles**: Default, survival analysis, genomics environments
+- **Custom images**: Version-controlled Rock servers with specific packages
+
+#### Armadillo stack  
+- **Armadillo server**: Alternative DataSHIELD backend
+- **RServer integration**: DataSHIELD package execution environment
+
+#### Deployment progression
+- Stage 1 (local): HTTP access for development and testing
+- Stage 2 (production): HTTPS with proper certificates and DNS
+- Stage 3 (advanced): Multiple profiles and custom package management
 
 :::: {.callout-tip}
-No prior sysadmin experience required. We’ll keep commands copy‑pasteable and explain the “why” briefly as we go.
+No prior sysadmin experience required. We'll keep commands copy‑pasteable and explain the "why" briefly as we go.
 ::::
 
 ### Pre‑reading (short and optional)
 - DataSHIELD overview paper: [International Journal of Epidemiology](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4276062/)
 - Opal (DataSHIELD server) overview: [OBiBa Opal](https://www.obiba.org/pages/products/opal/)
+- Armadillo documentation: [MOLGENIS Armadillo](https://molgenis.github.io/molgenis-service-armadillo/)
 - DataSHIELD packages documentation: [cran.datashield.org](https://cran.datashield.org/web/)
 - Docker basics for this workshop:
   - Docker Desktop (Mac/Windows): [docs](https://docs.docker.com/desktop/)
   - Compose v2 usage/migration: [docs](https://docs.docker.com/compose/releases/migrate/)
-- Let’s Encrypt on Ubuntu + Nginx (for Stage 2):
+- Let's Encrypt on Ubuntu + Nginx (for production deployment):
   - Certbot + Nginx (Ubuntu): [DigitalOcean guide](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04)
 
 ### What we will not cover
-- Kubernetes, advanced identity (OIDC/Keycloak), or firewall hardening beyond basics
-- Data layer specifics (databases/object storage) for Armadillo—kept out to stay focused on deployment flow
+- Kubernetes deployments (we focus on Docker Compose)
+- Advanced identity management (OIDC/Keycloak)
+- Firewall hardening beyond TLS basics
+- Advanced monitoring and logging (though we will see mention Telegraf/Prometheus + Grafana if time permits)
 
 ### Outcomes
-By the end, you’ll have a working local deployment (Opal/Armadillo behind Nginx with TLS) and a clear path to promote it to a live DNS‑backed setup with Let’s Encrypt.
+By the end, you'll have:
+
+- A working local Opal/Armadillo deployment for development and testing
+- Understanding of production deployment options (IT-managed vs self-managed)
+- Knowledge of DataSHIELD profile management for different research contexts
+- Skills to build and maintain custom Rock server images
+- A clear path from development to production deployment
