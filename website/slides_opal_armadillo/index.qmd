@@ -1,0 +1,110 @@
+---
+title: "Opal vs Armadillo"
+subtitle: "Datashield in the wild"
+format: 
+  revealjs:
+    theme: default
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    css: styles.css
+---
+
+<div class="fixed-text">
+## What They Are
+
+
+**Opal**:
+
+- Mature platform by OBiBa
+- Full data management: storage, harmonisation, metadata, cataloguing
+- Widely used in DataSHIELD documentation and consortia
+
+**Armadillo**:
+
+- Lightweight server by MOLGENIS team (Support & Development)
+- Built specifically for DataSHIELD federated analysis
+- Easier deployment, fewer dependencies
+
+</div>
+--
+
+
+## Architecture & Storage
+
+<div class="fixed-text">
+
+**Opal**
+
+- Uses relational DBs (MySQL, PostgreSQL, MariaDB) or MongoDB
+- Stores data and metadata in databases
+- Supports complex workflows
+
+**Armadillo**
+ 
+- Stores data on the filesystem (e.g., Parquet files)
+- Uploads via UI or R package
+- Simpler, less infrastructure heavy
+
+</div>
+
+--
+
+## Features
+
+<div class="fixed-text">
+
+**Opal**
+
+- Rich functionality: harmonisation, metadata, cataloguing
+- Multiple R servers, horizontal scaling
+- Advanced admin and access control
+
+**Armadillo**
+
+- Focused on core federated analysis features
+- Profiles: named/versioned DS package collections
+- Permissions and function whitelisting
+- Lightweight and user-friendly
+</div>
+
+--
+
+## Pros & Cons
+
+<div class="fixed-text">
+
+**Opal**
+
+✅ Mature and feature-rich
+✅ Good for large, complex infrastructures
+❌ Higher complexity and overhead
+
+**Armadillo**
+
+✅ Lightweight, quick to deploy
+✅ Easier for cohorts with modest resources
+❌ Fewer features (e.g., less advanced harmonisation)
+❌ Newer, still catching up in some areas
+
+</div>
+
+--
+
+## When to Use
+
+<div class="fixed-text">
+
+**Choose Opal if:**
+
+- You need full data management, metadata, and harmonisation
+- You operate in a large consortium with complex workflows
+
+**Choose Armadillo if:**
+
+- You want lightweight, easy deployment
+- You mainly need secure federated analysis
+- Your team has limited IT resources and wants Molgenis Support
+
+</div>
+--

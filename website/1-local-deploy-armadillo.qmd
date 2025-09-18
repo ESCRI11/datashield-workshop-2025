@@ -9,6 +9,23 @@ format:
     preview-links: auto
 ---
 
+<style>
+.slide-deck {
+    border: 3px solid #dee2e6;
+    width: 100%;
+    height: 475px;
+}
+</style>
+
+<div>
+```{=html}
+
+<iframe class="slide-deck" src="slides_local_deploy_armadillo/index.html"></iframe>
+```
+</div>
+
+
+
 ## Welcome
 
 - Run **Armadillo**, **RServer**, locally with Docker Compose
@@ -78,6 +95,8 @@ docker compose up --build
 
 ## Kubernetes / Production
 
+- Full Docker stack available at:
+  https://github.com/molgenis/molgenis-service-armadillo
 - Helm charts available:  
   https://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart
 - DataSHIELD profiles maintained in Helm (private repo for some charts)
