@@ -287,28 +287,32 @@ storage:
 <span id="cb4-8"><a href=""></a><span class="ex">docker-compose</span> logs <span class="at">-f</span> armadillo </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>First start</strong>: May take a minute while images are pulled</p>
 <p><strong>Access</strong>: Open <code>http://localhost:8000</code> in your browser</p>
-<p><strong>Login</strong>: User <code>administrator</code> + password from config</p>
+<p><strong>Login</strong>: User <code>admin</code> + password from config</p>
 </section>
 <section id="step-4-test-datashield-connection" class="slide level2">
 <h2>Step 4: Test DataSHIELD Connection</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a><span class="fu">library</span>(DSI)</span>
-<span id="cb5-2"><a href=""></a><span class="fu">library</span>(DSOpal)</span>
-<span id="cb5-3"><a href=""></a><span class="fu">library</span>(httr)</span>
-<span id="cb5-4"><a href=""></a><span class="fu">set_config</span>(<span class="fu">config</span>(<span class="at">ssl_verifyhost =</span> <span class="dv">0</span>L, <span class="at">ssl_verifypeer =</span> <span class="dv">0</span>L))</span>
-<span id="cb5-5"><a href=""></a><span class="fu">library</span>(dsBaseClient)</span>
-<span id="cb5-6"><a href=""></a></span>
-<span id="cb5-7"><a href=""></a>b <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">newDSLoginBuilder</span>()</span>
-<span id="cb5-8"><a href=""></a>b<span class="sc">$</span><span class="fu">append</span>(</span>
-<span id="cb5-9"><a href=""></a>    <span class="at">server   =</span> <span class="st">"local"</span>,</span>
-<span id="cb5-10"><a href=""></a>    <span class="at">url      =</span> <span class="st">"http://localhost:8000"</span>,</span>
-<span id="cb5-11"><a href=""></a>    <span class="at">user     =</span> <span class="st">"admin"</span>,</span>
-<span id="cb5-12"><a href=""></a>    <span class="at">password =</span> <span class="st">"admin!!"</span>,</span>
-<span id="cb5-13"><a href=""></a>    <span class="at">profile =</span> <span class="st">"default"</span></span>
-<span id="cb5-14"><a href=""></a>)</span>
-<span id="cb5-15"><a href=""></a></span>
-<span id="cb5-16"><a href=""></a>logins <span class="ot">&lt;-</span> b<span class="sc">$</span><span class="fu">build</span>()</span>
-<span id="cb5-17"><a href=""></a>conns <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">datashield.login</span>(logins)</span>
-<span id="cb5-18"><a href=""></a><span class="fu">ds.ls</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a><span class="fu">library</span>(dsBaseClient)</span>
+<span id="cb5-2"><a href=""></a><span class="fu">library</span>(DSI)</span>
+<span id="cb5-3"><a href=""></a><span class="fu">library</span>(DSMolgenisArmadillo)</span>
+<span id="cb5-4"><a href=""></a></span>
+<span id="cb5-5"><a href=""></a></span>
+<span id="cb5-6"><a href=""></a>url <span class="ot">&lt;-</span> <span class="st">"http://localhost:8000"</span></span>
+<span id="cb5-7"><a href=""></a>builder <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">newDSLoginBuilder</span>()</span>
+<span id="cb5-8"><a href=""></a></span>
+<span id="cb5-9"><a href=""></a>builder<span class="sc">$</span><span class="fu">append</span>(</span>
+<span id="cb5-10"><a href=""></a>  <span class="at">server =</span> <span class="st">"armadillo"</span>,</span>
+<span id="cb5-11"><a href=""></a>  <span class="at">url =</span> url,</span>
+<span id="cb5-12"><a href=""></a>  <span class="co">#token = token,</span></span>
+<span id="cb5-13"><a href=""></a>  <span class="at">user =</span> <span class="st">"admin"</span>,</span>
+<span id="cb5-14"><a href=""></a>  <span class="at">password =</span> <span class="st">"admin"</span>,</span>
+<span id="cb5-15"><a href=""></a>  <span class="at">driver =</span> <span class="st">"ArmadilloDriver"</span>,</span>
+<span id="cb5-16"><a href=""></a>  <span class="at">profile =</span> <span class="st">"default"</span>)</span>
+<span id="cb5-17"><a href=""></a></span>
+<span id="cb5-18"><a href=""></a>logindata <span class="ot">&lt;-</span> builder<span class="sc">$</span><span class="fu">build</span>()</span>
+<span id="cb5-19"><a href=""></a>conns <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">datashield.login</span>(<span class="at">logins =</span> logindata)</span>
+<span id="cb5-20"><a href=""></a></span>
+<span id="cb5-21"><a href=""></a></span>
+<span id="cb5-22"><a href=""></a><span class="fu">ds.ls</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Note</strong>: SSL verification disabled for local testing only!</p>
 </section>
 <section id="key-configuration-points" class="slide level2">

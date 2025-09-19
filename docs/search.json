@@ -154,27 +154,7 @@
     "href": "1-local-deploy-armadillo.html#welcome",
     "title": "1. Deploying Armadillo for local use",
     "section": "",
-    "text": "Run Armadillo, RServer, locally with Docker Compose",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>1. Deploying Armadillo for local use</span>"
-    ]
-  },
-  {
-    "objectID": "1-local-deploy-armadillo.html#quickstart",
-    "href": "1-local-deploy-armadillo.html#quickstart",
-    "title": "1. Deploying Armadillo for local use",
-    "section": "Quickstart",
-    "text": "Quickstart\ndocker compose up\n\nLogs and data are stored in ./logs and ./data\n\n\n\nServices and Roles\n\nArmadillo → http://localhost:8000\n\nMain DataSHIELD server and admin UI. (With admin/admin as user)\n\nRServer → http://localhost:6311\n\nDataSHIELD packages;\n\n\n\n\n\nGoal\nDeploy Armadillo locally on your laptop using Docker Compose.\nReferences :\n\nArmadillo Quick Setup\n\n\n\n\nFiles layout\nlocal-deploy-armadillo\n├── config \n    ├── application.yml ( Main armadillo configuration ) \n├── data                ( Local storage ) \n├── docker-compose.yml \n└── logs                ( Armadillo logfiles )",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>1. Deploying Armadillo for local use</span>"
-    ]
-  },
-  {
-    "objectID": "1-local-deploy-armadillo.html#logs-data",
-    "href": "1-local-deploy-armadillo.html#logs-data",
-    "title": "1. Deploying Armadillo for local use",
-    "section": "Logs & Data",
-    "text": "Logs & Data\n\nRuntime logs and persistent test data are kept under:\n\n./logs\n./data",
+    "text": "Run Armadillo, RServer, locally with Docker Compose\n\n\n\nServices and Roles\nWhat we Deploy:\n\nArmadillo → http://localhost:8000\n\nMain DataSHIELD server and admin UI. (With admin/admin as user)\n\nRServer → http://localhost:6311\n\nDataSHIELD packages;\n\n\n\n\n\nGoal\nDeploy Armadillo locally on your laptop using Docker Compose.\nReferences :\n\nArmadillo Quick Setup\nArmadillo running under systemd\n\n\n\n\nFiles layout\nlocal-deploy-armadillo\n├── config \n    ├── application.yml ( Main armadillo configuration ) \n├── data                ( Local storage ) \n├── docker-compose.yml \n└── logs                ( Armadillo logfiles ) \n\n\n\n1) Armadillo configuration\nDefine password and profiles in this file. If you are running armadillo under systemd you can enable docker-management-enabled to true.\narmadillo:\n  docker-management-enabled: false\n  docker-run-in-container: true\n  profiles:\n    - name: default\n      image: datashield/rock-base:latest\n      port: 8085 \n      host: rserver \n      package-whitelist:\n        - dsBase\n      function-blacklist: [ ]\n      options:\n        datashield:\n          seed: 342325352\n\n# required settings:\nspring:\n  security:\n    user:\n      # please change this admin password!\n      password: admin!!!\n\n  # optional settings (review spring handbook to find more):\n  servlet:\n    multipart:\n      ## change this if your files are bigger\n      max-file-size: 1000MB\n      max-request-size: 1000MB\n\nstorage:\n  ## to change location of the data storage\n  root-dir: /data\n\n# Match with Dockerfile volume /logs\naudit.log.path: '/logs/audit.log'\nstdout.log.path: '/logs/armadillo.log'\n\nlogging:\n  level:\n    root: INFO\n    ## change to DEBUG to have more details, typically when developing\n    org.molgenis: DEBUG\n    ## Don't log upload data\n    org.apache.coyote.http11.Http11InputBuffer: INFO\n\n\n\n2) docker-compose.yml\nDefines the armadillo docker config.\nservices:\n armadillo:\n   image: molgenis/molgenis-armadillo:latest\n   platform: linux/amd64\n   environment:\n     LOGGING_CONFIG: 'classpath:logback-file.xml'\n     SPRING_SECURITY_USER_PASSWORD: 'admin'\n     SPRING_RSERVER_URL: 'http://rserver:8085'\n     DEBUG: \"TRUE\"\n   ports:\n     - \"8000:8080\"\n   volumes:\n     - ./logs:/app/logs\n     - ./data:/data\n     - /var/run/docker.sock:/var/run/docker.sock\n     - ./config:/config\n   networks:\n     - armadillo-workshop\n\n rserver:\n   image: datashield/rock-base:latest\n   platform: linux/amd64\n   environment:\n     DEBUG: \"TRUE\"\n   networks:\n     - armadillo-workshop\n\nnetworks:\n  armadillo-workshop:\n    driver: bridge\n\n\n\n3) Bring up the stack\nFrom the directory containing ‘docker-compose’\n\ndocker compose up -d\n#firs start may take a minute while images are pulled.\n\n#check health\n\ndocker compose logs -f armadillo\n\n\n\n4) Check Armadillo UI\n\nOpen http://localhost:8000 in your browser.\nLogin with user admin and the password in the configuration.\n\n\n\n5) Rstudio Check R connectivity\nlibrary(dsBaseClient)\nlibrary(DSI)\nlibrary(DSMolgenisArmadillo)\n\n\n\nurl &lt;- \"http://localhost:8000\"\nbuilder &lt;- DSI::newDSLoginBuilder()\n\nbuilder$append(\n  server = \"armadillo\",\n  url = url,\n  #token = token,\n  user = \"admin\",\n  password = \"admin\",\n  driver = \"ArmadilloDriver\",\n  profile = \"default\")\n\nlogindata &lt;- builder$build()\nconns &lt;- DSI::datashield.login(logins = logindata)\n\n\nds.ls()",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>1. Deploying Armadillo for local use</span>"
     ]
@@ -194,7 +174,17 @@
     "href": "1-local-deploy-armadillo.html#kubernetes-production",
     "title": "1. Deploying Armadillo for local use",
     "section": "Kubernetes / Production",
-    "text": "Kubernetes / Production\n\nFull Docker stack available at: https://github.com/molgenis/molgenis-service-armadillo\nHelm charts available:\nhttps://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart\nDataSHIELD profiles maintained in Helm (private repo for some charts)\nIf you need help or want to contribute contact:\n\nEmail: support@molgenis.org\nSlack: join the #Armadillo-support channel (DataSHIELD Slack)",
+    "text": "Kubernetes / Production\n\nFull Docker stack, and systemd setup available at: https://molgenis.github.io/molgenis-service-armadillo\nHelm charts available:\nhttps://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart\nDataSHIELD kubernetes profiles maintained in Helm (private repo for some charts)\nIf you need help or want to contribute contact:\n\nEmail: support@molgenis.org\nSlack: join the #Armadillo-support channel (DataSHIELD Slack)",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>1. Deploying Armadillo for local use</span>"
+    ]
+  },
+  {
+    "objectID": "1-local-deploy-armadillo.html#live-playground",
+    "href": "1-local-deploy-armadillo.html#live-playground",
+    "title": "1. Deploying Armadillo for local use",
+    "section": "Live Playground",
+    "text": "Live Playground\n\nMolgenis is providing an Armadillo playground. With an central analysis server playground (Jupyterhub). Contact support@molgenis.org with your e-mail adres for (institute) access.",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>1. Deploying Armadillo for local use</span>"
     ]

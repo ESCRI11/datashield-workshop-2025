@@ -30,19 +30,11 @@ format:
 
 - Run **Armadillo**, **RServer**, locally with Docker Compose
 
----
-
-## Quickstart
-
-```
-docker compose up
-```
-
-- Logs and data are stored in `./logs` and `./data`
 
 ---
 
 ### Services and Roles 
+What we Deploy:
 
 - **Armadillo** → http://localhost:8000
   - Main DataSHIELD server and admin UI. (With admin/admin as user)
@@ -58,6 +50,7 @@ Deploy Armadillo locally on your laptop using Docker Compose.
 References :
 
 - Armadillo [Quick Setup](https://molgenis.github.io/molgenis-service-armadillo/pages/install_management/armadillo_docker_install/)
+- Armadillo running under [systemd](https://molgenis.github.io/molgenis-service-armadillo/pages/install_management/armadillo_install/)
 
 ---
 
@@ -73,13 +66,147 @@ local-deploy-armadillo
 
 ```
 
+### 1) Armadillo configuration
+Define password and profiles in this file. If you are running armadillo under systemd you can enable docker-management-enabled to true. 
 
 
-## Logs & Data
+```yaml
+armadillo:
+  docker-management-enabled: false
+  docker-run-in-container: true
+  profiles:
+    - name: default
+      image: datashield/rock-base:latest
+      port: 8085 
+      host: rserver 
+      package-whitelist:
+        - dsBase
+      function-blacklist: [ ]
+      options:
+        datashield:
+          seed: 342325352
 
-- Runtime logs and persistent test data are kept under:
-  - `./logs`
-  - `./data`
+# required settings:
+spring:
+  security:
+    user:
+      # please change this admin password!
+      password: admin!!!
+
+  # optional settings (review spring handbook to find more):
+  servlet:
+    multipart:
+      ## change this if your files are bigger
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+
+storage:
+  ## to change location of the data storage
+  root-dir: /data
+
+# Match with Dockerfile volume /logs
+audit.log.path: '/logs/audit.log'
+stdout.log.path: '/logs/armadillo.log'
+
+logging:
+  level:
+    root: INFO
+    ## change to DEBUG to have more details, typically when developing
+    org.molgenis: DEBUG
+    ## Don't log upload data
+    org.apache.coyote.http11.Http11InputBuffer: INFO
+
+```
+---
+
+### 2) docker-compose.yml
+
+Defines the armadillo docker config. 
+
+```yaml
+services:
+ armadillo:
+   image: molgenis/molgenis-armadillo:latest
+   platform: linux/amd64
+   environment:
+     LOGGING_CONFIG: 'classpath:logback-file.xml'
+     SPRING_SECURITY_USER_PASSWORD: 'admin'
+     SPRING_RSERVER_URL: 'http://rserver:8085'
+     DEBUG: "TRUE"
+   ports:
+     - "8000:8080"
+   volumes:
+     - ./logs:/app/logs
+     - ./data:/data
+     - /var/run/docker.sock:/var/run/docker.sock
+     - ./config:/config
+   networks:
+     - armadillo-workshop
+
+ rserver:
+   image: datashield/rock-base:latest
+   platform: linux/amd64
+   environment:
+     DEBUG: "TRUE"
+   networks:
+     - armadillo-workshop
+
+networks:
+  armadillo-workshop:
+    driver: bridge
+```
+
+---
+
+### 3) Bring up the stack
+
+From the directory containing 'docker-compose' 
+
+```bash
+
+docker compose up -d
+#firs start may take a minute while images are pulled.
+
+#check health
+
+docker compose logs -f armadillo
+
+```
+---
+
+### 4) Check Armadillo UI
+
+- Open `http://localhost:8000` in your browser.
+- Login with user admin and the password in the configuration. 
+
+### 5) Rstudio Check R connectivity
+
+
+```r
+library(dsBaseClient)
+library(DSI)
+library(DSMolgenisArmadillo)
+
+
+
+url <- "http://localhost:8000"
+builder <- DSI::newDSLoginBuilder()
+
+builder$append(
+  server = "armadillo",
+  url = url,
+  #token = token,
+  user = "admin",
+  password = "admin",
+  driver = "ArmadilloDriver",
+  profile = "default")
+
+logindata <- builder$build()
+conns <- DSI::datashield.login(logins = logindata)
+
+
+ds.ls()
+```
 
 ---
 
@@ -95,17 +222,22 @@ docker compose up --build
 
 ## Kubernetes / Production
 
-- Full Docker stack available at:
-  https://github.com/molgenis/molgenis-service-armadillo
+- Full Docker stack, and systemd setup available at:
+  https://molgenis.github.io/molgenis-service-armadillo
 - Helm charts available:  
   https://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart
-- DataSHIELD profiles maintained in Helm (private repo for some charts)
+- DataSHIELD kubernetes profiles maintained in Helm (private repo for some charts)
 - If you need help or want to contribute contact:
   - Email: support@molgenis.org
   - Slack: join the `#Armadillo-support` channel (DataSHIELD Slack)
 
 ---
 
+## Live Playground
+
+- Molgenis is providing an Armadillo playground. With an central analysis server playground (Jupyterhub). Contact support@molgenis.org with your e-mail adres for (institute) access.  
+
+---
 ## Notes
 
 - This quickstart is intended for local development and testing

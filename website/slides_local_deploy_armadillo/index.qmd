@@ -123,30 +123,34 @@ docker-compose logs -f armadillo
 
 **Access**: Open `http://localhost:8000` in your browser
 
-**Login**: User `administrator` + password from config 
+**Login**: User `admin` + password from config 
 
 ---
 
 ## Step 4: Test DataSHIELD Connection
 
 ```r
-library(DSI)
-library(DSOpal)
-library(httr)
-set_config(config(ssl_verifyhost = 0L, ssl_verifypeer = 0L))
 library(dsBaseClient)
+library(DSI)
+library(DSMolgenisArmadillo)
 
-b <- DSI::newDSLoginBuilder()
-b$append(
-    server   = "local",
-    url      = "http://localhost:8000",
-    user     = "admin",
-    password = "admin!!",
-    profile = "default"
-)
 
-logins <- b$build()
-conns <- DSI::datashield.login(logins)
+url <- "http://localhost:8000"
+builder <- DSI::newDSLoginBuilder()
+
+builder$append(
+  server = "armadillo",
+  url = url,
+  #token = token,
+  user = "admin",
+  password = "admin",
+  driver = "ArmadilloDriver",
+  profile = "default")
+
+logindata <- builder$build()
+conns <- DSI::datashield.login(logins = logindata)
+
+
 ds.ls()
 ```
 
