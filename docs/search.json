@@ -14,7 +14,7 @@
     "href": "env_setup.html",
     "title": "Environment Setup",
     "section": "",
-    "text": "Prerequisites",
+    "text": "Prerequisites\nWelcome to the workshop on deploying Opal and Molgenis Armadillo infrastructure using Docker. This guide will help you set up your environment to ensure a smooth experience during the workshop.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Environment Setup</span>"
     ]
@@ -194,7 +194,7 @@
     "href": "1-local-deploy-armadillo.html#kubernetes-production",
     "title": "1. Deploying Armadillo for local use",
     "section": "Kubernetes / Production",
-    "text": "Kubernetes / Production\n\nHelm charts available:\nhttps://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart\nDataSHIELD profiles maintained in Helm (private repo for some charts)\nIf you need help or want to contribute contact:\n\nEmail: support@molgenis.org\nSlack: join the #Armadillo-support channel (DataSHIELD Slack)",
+    "text": "Kubernetes / Production\n\nFull Docker stack available at: https://github.com/molgenis/molgenis-service-armadillo\nHelm charts available:\nhttps://github.com/molgenis/molgenis-service-armadillo/tree/master/helm-chart\nDataSHIELD profiles maintained in Helm (private repo for some charts)\nIf you need help or want to contribute contact:\n\nEmail: support@molgenis.org\nSlack: join the #Armadillo-support channel (DataSHIELD Slack)",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>1. Deploying Armadillo for local use</span>"
     ]
