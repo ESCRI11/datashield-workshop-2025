@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Build script for custom Rock server with DataSHIELD Survival profile
-# Usage: ./build_profile.sh
+# Usage: ./build_profile.sh (ensure it is executable `chmod +x build_profile.sh`)
 
 TAG="v2.3.0"
 IMAGE_NAME="rock-survival"
