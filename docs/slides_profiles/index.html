@@ -432,7 +432,11 @@
 <h2>File Structure (No Change!)</h2>
 <pre><code>opal-local/
 ├── .env                    # Same password
-└── docker-compose.yml     # Extended with profiles</code></pre>
+├── docker-compose.yml     # Extended with profiles
+├── data/                   # Persistent data storage
+│   ├── opal/              # Opal server data
+│   └── mongo/             # MongoDB data
+└── logs/                   # Opal logs</code></pre>
 <p><br></p>
 <p><strong>Same foundation</strong> - just add more Rock services</p>
 </section>
@@ -485,13 +489,13 @@
 <span id="cb8-6"><a href=""></a><span class="at">  </span><span class="fu">environment</span><span class="kw">:</span></span>
 <span id="cb8-7"><a href=""></a><span class="at">    </span><span class="kw">-</span><span class="at"> ROCK_ID=survival</span><span class="co">   # Must be unique</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><strong>Why</strong>: Each profile needs a unique ID for Opal to route requests correctly</p>
-<p><strong>4. Same Foundation</strong> - MongoDB, volumes, network unchanged - <strong>Data preserved</strong> during transition</p>
+<p><strong>4. Same Foundation</strong> - MongoDB, local folders, network unchanged - <strong>Data preserved</strong> during transition</p>
 </section>
 <section id="step-3-apply-changes-critical" class="slide level2">
 <h2>Step 3: Apply Changes (Critical!)</h2>
 <p><strong>⚠️ Maintenance Window Required</strong></p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href=""></a><span class="co"># NEVER use 'docker-compose down' - loses data!</span></span>
-<span id="cb9-2"><a href=""></a><span class="ex">docker-compose</span> stop</span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href=""></a><span class="co"># Clean restart - ensures proper profile registration</span></span>
+<span id="cb9-2"><a href=""></a><span class="ex">docker-compose</span> down</span>
 <span id="cb9-3"><a href=""></a></span>
 <span id="cb9-4"><a href=""></a><span class="co"># Update your docker-compose.yml file</span></span>
 <span id="cb9-5"><a href=""></a></span>
@@ -500,7 +504,7 @@
 <span id="cb9-8"><a href=""></a></span>
 <span id="cb9-9"><a href=""></a><span class="co"># Verify all services</span></span>
 <span id="cb9-10"><a href=""></a><span class="ex">docker-compose</span> ps</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Key</strong>: Use <code>stop</code> not <code>down</code> to preserve data volumes</p>
+<p><strong>Key</strong>: Use <code>down</code> for clean container recreation - data preserved in local folders</p>
 </section>
 <section id="step-4-verify-profiles" class="slide level2">
 <h2>Step 4: Verify Profiles</h2>
@@ -549,9 +553,8 @@
 <p><strong>1. Delete service block from docker-compose.yml</strong></p>
 <p><strong>2. Remove from ROCK_HOSTS environment variable</strong></p>
 <p><strong>3. Apply changes:</strong></p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href=""></a><span class="ex">docker-compose</span> stop</span>
-<span id="cb14-2"><a href=""></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span>
-<span id="cb14-3"><a href=""></a><span class="ex">docker-compose</span> rm rock-oldprofile  <span class="co"># Cleanup</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href=""></a><span class="ex">docker-compose</span> down</span>
+<span id="cb14-2"><a href=""></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="troubleshooting" class="slide level2">
 <h2>Troubleshooting</h2>
@@ -564,6 +567,7 @@
 <ul>
 <li>Verify ROCK_HOSTS includes all profiles</li>
 <li>Check service names match exactly</li>
+<li>Try clean restart: <code>docker-compose down &amp;&amp; docker-compose up -d</code></li>
 </ul>
 </section>
 <section id="troubleshooting-cont." class="slide level2">

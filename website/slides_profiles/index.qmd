@@ -60,7 +60,11 @@ Browser → Opal → Multiple Rock Containers
 ```
 opal-local/
 ├── .env                    # Same password
-└── docker-compose.yml     # Extended with profiles
+├── docker-compose.yml     # Extended with profiles
+├── data/                   # Persistent data storage
+│   ├── opal/              # Opal server data
+│   └── mongo/             # MongoDB data
+└── logs/                   # Opal logs
 ```
 
 <br>
@@ -141,7 +145,7 @@ rock-survival:
 **Why**: Each profile needs a unique ID for Opal to route requests correctly
 
 **4. Same Foundation**
-- MongoDB, volumes, network unchanged
+- MongoDB, local folders, network unchanged
 - **Data preserved** during transition
 
 ---
@@ -151,8 +155,8 @@ rock-survival:
 **⚠️ Maintenance Window Required**
 
 ```bash
-# NEVER use 'docker-compose down' - loses data!
-docker-compose stop
+# Clean restart - ensures proper profile registration
+docker-compose down
 
 # Update your docker-compose.yml file
 
@@ -163,7 +167,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-**Key**: Use `stop` not `down` to preserve data volumes
+**Key**: Use `down` for clean container recreation - data preserved in local folders
 
 ---
 
@@ -235,9 +239,8 @@ rock-newprofile:
 
 **3. Apply changes:**
 ```bash
-docker-compose stop
+docker-compose down
 docker-compose up -d
-docker-compose rm rock-oldprofile  # Cleanup
 ```
 ---
 
@@ -252,6 +255,7 @@ docker-compose rm rock-oldprofile  # Cleanup
 
 - Verify ROCK_HOSTS includes all profiles
 - Check service names match exactly
+- Try clean restart: `docker-compose down && docker-compose up -d`
 
 ---
 

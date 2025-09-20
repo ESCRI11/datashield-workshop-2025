@@ -45,12 +45,16 @@ format:
 ```
 opal-local/
 ├── .env                    # Environment variables
-└── docker-compose.yml     # Service definitions  
+├── docker-compose.yml     # Service definitions  
+├── data/                   # Persistent data storage
+│   ├── opal/              # Opal server data
+│   └── mongo/             # MongoDB data
+└── logs/                   # Opal logs
 ```
 
 <br>
 
-**Simple setup** - only 2 files needed!
+**Local folders** - easy data management!
 
 ---
 
@@ -82,12 +86,17 @@ services:
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
       - ROCK_HOSTS=rock:8085
+    volumes:
+      - ./data/opal:/srv
+      - ./logs:/var/log/opal
   mongo:
     image: mongo:6.0
+    volumes:
+      - ./data/mongo:/data/db
   rock:
     image: datashield/rock-base:latest
     environment:
-styles.css    - ROCK_ID=new-st
+      - ROCK_ID=new-stack-rock
 ```
 
 ---
@@ -95,17 +104,20 @@ styles.css    - ROCK_ID=new-st
 ## Step 3: Deploy the Stack
 
 ```bash
+# Create data directories
+mkdir -p data/opal data/mongo logs
+
 # Start all services
 docker-compose up -d
 
 # Check status
 docker-compose ps
 
-# Monitor Opal logs
-docker-compose logs -f opal
+# Monitor logs
+docker-compose logs
 ```
 
-**First start**: May take a minute while images are pulled
+**Clean restart** (recommended): `docker-compose down && docker-compose up -d`
 
 **Access**: Open `http://localhost:8080` in your browser
 
@@ -149,8 +161,9 @@ ds.ls()
 
 **Persistence**
 
-- Named volumes preserve data across restarts
-- Remove volumes to reset completely
+- Local folders preserve data across restarts
+- Easy to backup, inspect, and manage
+- Remove `data/` folder to reset completely
 
 ---
 
@@ -164,8 +177,7 @@ ds.ls()
 **Login fails**
 
 - Ensure `OPAL_ADMINISTRATOR_PASSWORD` set at first start
-- Reset: stop containers, remove `opal_srv` volume, restart
-
+- Reset: `docker-compose down`, remove `data/opal` folder, restart
 
 ---
 

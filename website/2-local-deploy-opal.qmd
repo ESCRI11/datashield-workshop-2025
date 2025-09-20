@@ -61,7 +61,11 @@ Use this folder layout:
 ```
 opal-local/
 ├── .env
-└── docker-compose.yml
+├── docker-compose.yml
+├── data/
+│   ├── opal/
+│   └── mongo/
+└── logs/
 ```
 
 ### 1) Create a `.env` file
@@ -96,40 +100,50 @@ services:
       - MONGO_PORT=27017
       - ROCK_HOSTS=rock:8085
     volumes:
-      - opal_srv:/srv
+      - ./data/opal:/srv
+      - ./logs:/var/log/opal
   mongo:
     image: mongo:6.0
     volumes:
-      - mongo_data:/data/db
+      - ./data/mongo:/data/db
 
   rock:
     image: datashield/rock-base:latest
     environment:
     - ROCK_ID=new-stack-rock
 
-volumes:
-  opal_srv:
-  mongo_data:
-
 networks:
-  opalnet:
+  default:
+    name: opalnet
 ```
 
 Highlights:
 - Opal sees Rock at `rock:8085` and MongoDB via service names on the internal network.
 - Opal is directly accessible on port 8080 for simplicity.
 - All services run on the `opalnet` Docker network.
+- Data is persisted in local folders (`./data/opal`, `./data/mongo`) instead of Docker volumes for easier management and portability.
 
 ### 3) Bring it up
 From the directory containing `docker-compose.yml` and `.env`:
 
 ```bash
-docker compose up -d
+# Create data directories
+mkdir -p data/opal data/mongo logs
+
+# Start services
+docker-compose up -d
 # First start may take a minute while images are pulled.
 
 # Check health
-docker compose ps
-docker compose logs -f opal | cat
+docker-compose ps
+docker-compose logs
+```
+
+For clean restarts (recommended for development):
+```bash
+# Clean restart - ensures proper service registration
+docker-compose down
+docker-compose up -d
 ```
 
 - Open `http://localhost:8080` in your browser.
@@ -169,9 +183,10 @@ Notes:
 
 ### Troubleshooting
 - Opal not reachable: check if port 8080 is available locally.
-- Login fails: ensure `OPAL_ADMINISTRATOR_PASSWORD` was set at first start; to reset, stop containers, remove `opal_srv` volume, and start again.
+- Login fails: ensure `OPAL_ADMINISTRATOR_PASSWORD` was set at first start; to reset, run `docker-compose down`, remove the `data/opal` folder, and start again.
 - Mongo version: Opal expects MongoDB ≤ 6.0; using `mongo:6.0` matches docs.
 - Rock connection issues: check that Rock container is running and healthy.
+- Profile registration issues: use `docker-compose down && docker-compose up -d` for clean restarts that ensure proper service registration.
 
 ### Next steps
 When ready to go live, add Nginx reverse proxy with TLS, DNS configuration, and hardening as we'll cover in the later section. For now, you have a working local Opal + DataSHIELD lab.

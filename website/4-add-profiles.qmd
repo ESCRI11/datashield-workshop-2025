@@ -73,7 +73,11 @@ From section 1, you should have this structure:
 ```
 opal-local/
 ├── .env
-└── docker-compose.yml
+├── docker-compose.yml
+├── data/
+│   ├── opal/
+│   └── mongo/
+└── logs/
 ```
 
 We'll extend this by adding new Rock services for each profile.
@@ -106,40 +110,30 @@ services:
       # Multiple Rock hosts - comma separated
       - ROCK_HOSTS=rock-default:8085,rock-survival:8085
     volumes:
-      - opal_srv:/srv
-    networks:
-      - opalnet
+      - ./data/opal:/srv
+      - ./logs:/var/log/opal
 
   # Default profile (same as section 1, just renamed)
   rock-default:
     image: datashield/rock-base:latest
     environment:
       - ROCK_ID=default
-    networks:
-      - opalnet
 
   # New survival analysis profile  
   rock-survival:
     image: datashield/rock-base:latest
     environment:
       - ROCK_ID=survival
-    networks:
-      - opalnet
 
   # MongoDB (unchanged from section 1)
   mongo:
     image: mongo:6.0
     volumes:
-      - mongo_data:/data/db
-    networks:
-      - opalnet
-
-volumes:
-  opal_srv:
-  mongo_data:
+      - ./data/mongo:/data/db
 
 networks:
-  opalnet:
+  default:
+    name: opalnet
 ```
 
 #### Understanding the changes
@@ -184,7 +178,7 @@ Each profile runs in its own container, providing isolated R environments. The u
 **5. What Stays the Same**
 
 - **MongoDB service**: Data storage is independent of computation profiles
-- **Volumes**: Named volumes preserve your existing data during the transition
+- **Data persistence**: Local folders preserve your existing data during the transition
 - **Network**: Same `opalnet` network ensures all services can communicate
 
 This transforms your architecture from a single computation environment to multiple isolated profiles:
@@ -203,11 +197,11 @@ After:  Opal ↔ Multiple Rock Containers (profiles)
 **Service Interruption**: Adding or removing profiles requires stopping the Opal service, which will temporarily interrupt access for all users. Plan a maintenance window and notify users in advance.
 :::
 
-The key to adding profiles without losing your existing data is to preserve the named volumes:
+The key to adding profiles without losing your existing data is using local folders that persist between container recreations:
 
 ```bash
-# 1. Stop all services (but preserve data volumes)
-docker-compose stop
+# 1. Stop and remove all services (data in local folders is preserved)
+docker-compose down
 
 # 2. Update your docker-compose.yml file (copy the extended version above)
 
@@ -218,7 +212,7 @@ docker-compose up -d
 docker-compose ps
 ```
 
-**Important**: Never run `docker-compose down` as this removes the named volumes containing your data. Always use `docker-compose stop` for graceful shutdowns.
+**Benefits of this approach**: Using `docker-compose down` ensures clean container recreation, proper service registration, and profile discovery while preserving all data in local folders (`./data/opal`, `./data/mongo`, `./logs`).
 
 ### Step 4: Verify your profiles are running
 
@@ -244,12 +238,10 @@ If you want to add just one profile at a time, here's the simplified process:
 Add the new Rock service to the `services:` section:
 
 ```yaml
-  rock-newprofile:
+      rock-newprofile:
     image: datashield/rock-base:latest
     environment:
       - ROCK_ID=newprofile
-    networks:
-      - opalnet
 ```
 
 And update the `ROCK_HOSTS` environment variable in the `opal` service:
@@ -259,8 +251,8 @@ And update the `ROCK_HOSTS` environment variable in the `opal` service:
 
 #### 2) Apply the changes (with maintenance window)
 ```bash
-# Stop all services
-docker-compose stop
+# Stop and remove all services (clean restart)
+docker-compose down
 
 # Start with new configuration
 docker-compose up -d
@@ -276,14 +268,11 @@ To remove a profile safely:
 
 #### 2) Apply the changes (with maintenance window)
 ```bash
-# Stop all services
-docker-compose stop
+# Stop and remove all services (clean restart)
+docker-compose down
 
 # Start with updated configuration
 docker-compose up -d
-
-# Clean up the removed container (optional)
-docker-compose rm rock-genomics
 ```
 
 ::: {.callout-note}
@@ -339,6 +328,7 @@ docker-compose exec opal curl -f http://rock-genomics:8085/
 - Verify the `ROCK_HOSTS` environment variable includes all profiles
 - Check that service names match between docker-compose.yml and ROCK_HOSTS
 - Ensure all containers are on the same network (`opalnet`)
+- Try a clean restart: `docker-compose down && docker-compose up -d`
 
 #### Memory issues
 ```bash

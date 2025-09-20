@@ -425,9 +425,13 @@
 <h2>File Structure</h2>
 <pre><code>opal-local/
 ├── .env                    # Environment variables
-└── docker-compose.yml     # Service definitions  </code></pre>
+├── docker-compose.yml     # Service definitions  
+├── data/                   # Persistent data storage
+│   ├── opal/              # Opal server data
+│   └── mongo/             # MongoDB data
+└── logs/                   # Opal logs</code></pre>
 <p><br></p>
-<p><strong>Simple setup</strong> - only 2 files needed!</p>
+<p><strong>Local folders</strong> - easy data management!</p>
 </section>
 <section id="step-1-environment-variables" class="slide level2">
 <h2>Step 1: Environment Variables</h2>
@@ -451,24 +455,32 @@
 <span id="cb3-9"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> MONGO_HOST=mongo</span></span>
 <span id="cb3-10"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> MONGO_PORT=27017</span></span>
 <span id="cb3-11"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ROCK_HOSTS=rock:8085</span></span>
-<span id="cb3-12"><a href=""></a><span class="at">  </span><span class="fu">mongo</span><span class="kw">:</span></span>
-<span id="cb3-13"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> mongo:6.0</span></span>
-<span id="cb3-14"><a href=""></a><span class="at">  </span><span class="fu">rock</span><span class="kw">:</span></span>
-<span id="cb3-15"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> datashield/rock-base:latest</span></span>
-<span id="cb3-16"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
-<span id="cb3-17"><a href=""></a><span class="at">styles.css    - ROCK_ID=new-st</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-12"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb3-13"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ./data/opal:/srv</span></span>
+<span id="cb3-14"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ./logs:/var/log/opal</span></span>
+<span id="cb3-15"><a href=""></a><span class="at">  </span><span class="fu">mongo</span><span class="kw">:</span></span>
+<span id="cb3-16"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> mongo:6.0</span></span>
+<span id="cb3-17"><a href=""></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb3-18"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ./data/mongo:/data/db</span></span>
+<span id="cb3-19"><a href=""></a><span class="at">  </span><span class="fu">rock</span><span class="kw">:</span></span>
+<span id="cb3-20"><a href=""></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> datashield/rock-base:latest</span></span>
+<span id="cb3-21"><a href=""></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb3-22"><a href=""></a><span class="at">      </span><span class="kw">-</span><span class="at"> ROCK_ID=new-stack-rock</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="step-3-deploy-the-stack" class="slide level2">
 <h2>Step 3: Deploy the Stack</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href=""></a><span class="co"># Start all services</span></span>
-<span id="cb4-2"><a href=""></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href=""></a><span class="co"># Create data directories</span></span>
+<span id="cb4-2"><a href=""></a><span class="fu">mkdir</span> <span class="at">-p</span> data/opal data/mongo logs</span>
 <span id="cb4-3"><a href=""></a></span>
-<span id="cb4-4"><a href=""></a><span class="co"># Check status</span></span>
-<span id="cb4-5"><a href=""></a><span class="ex">docker-compose</span> ps</span>
+<span id="cb4-4"><a href=""></a><span class="co"># Start all services</span></span>
+<span id="cb4-5"><a href=""></a><span class="ex">docker-compose</span> up <span class="at">-d</span></span>
 <span id="cb4-6"><a href=""></a></span>
-<span id="cb4-7"><a href=""></a><span class="co"># Monitor Opal logs</span></span>
-<span id="cb4-8"><a href=""></a><span class="ex">docker-compose</span> logs <span class="at">-f</span> opal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>First start</strong>: May take a minute while images are pulled</p>
+<span id="cb4-7"><a href=""></a><span class="co"># Check status</span></span>
+<span id="cb4-8"><a href=""></a><span class="ex">docker-compose</span> ps</span>
+<span id="cb4-9"><a href=""></a></span>
+<span id="cb4-10"><a href=""></a><span class="co"># Monitor logs</span></span>
+<span id="cb4-11"><a href=""></a><span class="ex">docker-compose</span> logs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Clean restart</strong> (recommended): <code>docker-compose down &amp;&amp; docker-compose up -d</code></p>
 <p><strong>Access</strong>: Open <code>http://localhost:8080</code> in your browser</p>
 <p><strong>Login</strong>: User <code>administrator</code> + password from <code>.env</code></p>
 </section>
@@ -503,8 +515,9 @@
 </ul>
 <p><strong>Persistence</strong></p>
 <ul>
-<li>Named volumes preserve data across restarts</li>
-<li>Remove volumes to reset completely</li>
+<li>Local folders preserve data across restarts</li>
+<li>Easy to backup, inspect, and manage</li>
+<li>Remove <code>data/</code> folder to reset completely</li>
 </ul>
 </section>
 <section id="troubleshooting" class="slide level2">
@@ -517,7 +530,7 @@
 <p><strong>Login fails</strong></p>
 <ul>
 <li>Ensure <code>OPAL_ADMINISTRATOR_PASSWORD</code> set at first start</li>
-<li>Reset: stop containers, remove <code>opal_srv</code> volume, restart</li>
+<li>Reset: <code>docker-compose down</code>, remove <code>data/opal</code> folder, restart</li>
 </ul>
 </section>
 <section id="summary" class="slide level2">
