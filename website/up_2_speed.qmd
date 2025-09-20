@@ -72,6 +72,13 @@ This workshop is a hands-on primer on deploying secure, federated DataSHIELD bac
 No prior sysadmin experience required. We'll keep commands copy‑pasteable and explain the "why" briefly as we go.
 ::::
 
+### Why start with local deployment?
+- Local keeps friction low: no DNS, firewalls, or cloud costs. You can validate the stack in minutes on any laptop.
+- Safe sandbox: use HTTP and avoid exposing services to the internet while you explore features.
+- Developer‑friendly: iterate on DataSHIELD code and packages against a predictable, reproducible environment.
+- Portable: the same Compose foundation scales up later (add DNS, TLS, and hardening without changing core services).
+- Teaching aid: a contained lab to learn Opal and Rock.
+
 ### Pre‑reading (short and optional)
 - DataSHIELD overview paper: [International Journal of Epidemiology](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4276062/)
 - Opal (DataSHIELD server) overview: [OBiBa Opal](https://www.obiba.org/pages/products/opal/)

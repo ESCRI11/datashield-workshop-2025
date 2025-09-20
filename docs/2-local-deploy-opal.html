@@ -218,8 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#why-start-with-local-deployment" id="toc-why-start-with-local-deployment" class="nav-link active" data-scroll-target="#why-start-with-local-deployment">Why start with local deployment?</a></li>
-  <li><a href="#architecture-at-a-glance" id="toc-architecture-at-a-glance" class="nav-link" data-scroll-target="#architecture-at-a-glance">Architecture at a glance</a></li>
+  <li><a href="#architecture-at-a-glance" id="toc-architecture-at-a-glance" class="nav-link active" data-scroll-target="#architecture-at-a-glance">Architecture at a glance</a></li>
   <li><a href="#services-and-roles" id="toc-services-and-roles" class="nav-link" data-scroll-target="#services-and-roles">Services and roles</a></li>
   <li><a href="#goal" id="toc-goal" class="nav-link" data-scroll-target="#goal">Goal</a></li>
   <li><a href="#what-we-will-deploy" id="toc-what-we-will-deploy" class="nav-link" data-scroll-target="#what-we-will-deploy">What we will deploy</a></li>
@@ -266,16 +265,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <iframe class="slide-deck" src="slides_local_deploy/index.html"></iframe>
 </div>
-<section id="why-start-with-local-deployment" class="level3">
-<h3 class="anchored" data-anchor-id="why-start-with-local-deployment">Why start with local deployment?</h3>
-<ul>
-<li>Local keeps friction low: no DNS, firewalls, or cloud costs. You can validate the stack in minutes on any laptop.</li>
-<li>Safe sandbox: use HTTP and avoid exposing services to the internet while you explore features.</li>
-<li>Developer‑friendly: iterate on DataSHIELD code and packages against a predictable, reproducible environment.</li>
-<li>Portable: the same Compose foundation scales up later (add DNS, TLS, and hardening without changing core services).</li>
-<li>Teaching aid: a contained lab to learn Opal and Rock.</li>
-</ul>
-</section>
 <section id="architecture-at-a-glance" class="level3">
 <h3 class="anchored" data-anchor-id="architecture-at-a-glance">Architecture at a glance</h3>
 <div class="cell" data-layout-align="default">
