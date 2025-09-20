@@ -13,20 +13,18 @@ services:
       - MONGO_PORT=27017
       - ROCK_HOSTS=rock:8085
     volumes:
-      - opal_srv:/srv
+      - ./data/opal:/srv
+      - ./logs:/var/log/opal
   mongo:
     image: mongo:6.0
     volumes:
-      - mongo_data:/data/db
+      - ./data/mongo:/data/db
 
   rock:
     image: datashield/rock-base:latest
     environment:
     - ROCK_ID=new-stack-rock
 
-volumes:
-  opal_srv:
-  mongo_data:
-
 networks:
-  opalnet:
+  default:
+    name: opalnet
