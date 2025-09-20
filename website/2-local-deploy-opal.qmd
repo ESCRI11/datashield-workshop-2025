@@ -54,7 +54,6 @@ Deploy Opal locally on your laptop using Docker Compose. This lets you try DataS
 References:
 
 - Opal Docker image + env vars: [Installation — Docker Image](https://opaldoc.obiba.org/en/latest/admin/installation.html) and [Configuration](https://opaldoc.obiba.org/en/latest/admin/configuration.html)
-- Templates adapted from: `easy-opal` compose template ([docker-compose.yml.tpl](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl)); see also helper commands ([src/commands](https://github.com/isglobal-brge/easy-opal/tree/main/src/commands))
 
 ### Files layout
 Use this folder layout:

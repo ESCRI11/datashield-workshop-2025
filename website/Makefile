@@ -6,4 +6,5 @@ render:
 	quarto render slides_local_deploy
 	quarto render slides_local_deploy_armadillo
 	quarto render slides_profiles
+	quarto render slides_build_rock
 	quarto render

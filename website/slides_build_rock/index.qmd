@@ -1,0 +1,151 @@
+---
+title: "Creating custom Rock server images"
+subtitle: "Dick Postma and Xavier Escribà Montagut"
+format: 
+  revealjs:
+    theme: default
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    css: styles.css
+---
+
+## Overview
+
+**Goal**: Build custom Rock server Docker images with specific DataSHIELD packages
+
+**Why custom images?**
+
+- 🔒 **Version control** - Pin specific package versions for reproducibility
+- 🎯 **Consistency** - Ensure all environments use identical packages
+- 📦 **Distribution** - Share images across teams and deployments
+
+---
+
+## Base Images Available
+
+**DataSHIELD provides base images:**
+
+- `datashield/rock-base:6.3-R4.3` - Minimal Rock server with R 4.3
+- `obiba/rock:latest` - Standard Rock just with `resourcer`
+
+<br>
+
+**Naming convention**: `{dsBase-version}-R{R-version}`
+
+Example: `6.3-R4.3` = dsBase v6.3 + R v4.3
+
+---
+
+## Dockerfile Structure
+
+**Basic template for custom Rock images:**
+
+```dockerfile
+FROM datashield/rock-base:6.3-R4.3
+
+# Define package versions for reproducibility
+ENV DSURVIVAL_VERSION v2.3.0-dev
+
+# Rock library path
+ENV ROCK_LIB /var/lib/rock/R/library
+
+# Install DataSHIELD packages
+RUN Rscript -e "remotes::install_github('datashield/dsSurvival', \
+    ref = '$DSURVIVAL_VERSION', lib = '$ROCK_LIB')"
+
+# Fix ownership (Rock runs as non-root user)
+RUN chown -R rock $ROCK_LIB
+```
+
+---
+
+## Building the Image
+
+```bash
+# Build with descriptive tag
+docker build -f Dockerfile.survival -t rock-survival:v2.3.0 .
+
+# Build with multiple tags
+docker build -f Dockerfile.survival \
+  -t rock-survival:v2.3.0 \
+  -t rock-survival:latest \
+  .
+```
+
+<br>
+
+**Best practice**: Always tag with version numbers!
+
+---
+
+## Testing Your Custom Image
+
+```bash
+# Run the custom image
+docker run -d --name test-survival-rock \
+  -p 8085:8085 \
+  rock-survival:v2.3.0
+
+# Verify packages are installed
+docker exec test-survival-rock \
+  Rscript -e "library(dsSurvival); packageVersion('dsSurvival')"
+
+# Clean up
+docker stop test-survival-rock
+docker rm test-survival-rock
+```
+
+---
+
+
+## Tagging Strategy
+
+**Use semantic versioning:**
+
+```bash
+# Development versions
+docker build -t rock-survival:v2.3.0-dev .
+
+# Release versions  
+docker build -t rock-survival:v2.3.0 .
+docker build -t rock-survival:latest .
+
+# Environment-specific tags
+docker build -t rock-survival:production .
+docker build -t rock-survival:staging .
+```
+
+---
+
+## Distribution via Registry
+
+**Push to Docker Hub:**
+
+```bash
+# Tag for your registry
+docker tag rock-survival:v2.3.0 \
+  your-dockerhub-username/rock-survival:v2.3.0
+
+# Push to registry
+docker push your-dockerhub-username/rock-survival:v2.3.0
+```
+
+**Pull on other systems:**
+
+```bash
+docker pull your-dockerhub-username/rock-survival:v2.3.0
+```
+
+---
+
+## Summary
+
+✅ **Achieved**: Custom Rock server images with specific packages
+
+🎯 **Benefits**:
+- Reproducible environments across deployments
+- Version-controlled package management
+- Team collaboration and sharing
+
+🚀 **Ready for**: Production deployment with consistent environments!
