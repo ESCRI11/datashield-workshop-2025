@@ -87,7 +87,7 @@ services:
   rock:
     image: datashield/rock-base:latest
     environment:
-    - ROCK_ID=new-st
+styles.css    - ROCK_ID=new-st
 ```
 
 ---

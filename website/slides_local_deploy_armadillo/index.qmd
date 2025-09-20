@@ -1,0 +1,196 @@
+---
+title: "Opal/Armadillo Local Deployment"
+subtitle: "Dick Postma and Xavier Escribà Montagut"
+format: 
+  revealjs:
+    theme: default
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    css: styles.css
+---
+
+## Overview
+
+**Goal**: Deploy Armadillo locally using Docker Compose
+
+---
+
+## Services & Roles
+**🏢 Armadillo (Molgenis DataSHIELD Server)**
+- Main DataSHIELD server and admin UI
+
+<br>
+
+**🔧 Rock (R Server)**
+- Executes R/DataSHIELD calls from Armadillo 
+
+<br>
+
+**🗄️ Filesystem (File Store)**
+- Files are stored locally on disk.  
+
+**
+
+---
+
+## File Structure
+
+```
+local-deploy-armadillo
+├── config
+    ├── application.yml ( Main armadillo configuration )
+├── data                ( Local storage )
+├── docker-compose.yml
+└── logs                ( Armadillo logfiles )
+
+
+```
+---
+
+## Step 1: Armadillo configuration 
+
+```
+armadillo:
+  docker-management-enabled: false
+  docker-run-in-container: true
+  profiles:
+    - name: default
+      image: datashield/rock-base:latest
+      port: 8085
+      host: rserver
+      package-whitelist:
+        - dsBase
+      function-blacklist: [ ]
+      options:
+        datashield:
+          seed: 342325352
+
+# required settings:
+spring:
+  security:
+    user:
+      # please change this admin password!
+      password: admin!!!
+
+storage:
+  ## to change location of the data storage
+  root-dir: /data
+
+```
+
+---
+
+## Step 2: Docker Compose (simplified)
+
+```yaml
+services:
+ armadillo:
+   image: molgenis/molgenis-armadillo:latest
+   platform: linux/amd64
+   ports:
+     - "8000:8080"
+   volumes:
+     - ./logs:/app/logs
+     - ./data:/data
+     - /var/run/docker.sock:/var/run/docker.sock
+     - ./config:/config
+   networks:
+     - armadillo-workshop
+
+ rserver:
+   image: datashield/rock-base:latest
+   platform: linux/amd64
+
+```
+
+---
+
+## Step 3: Deploy the Stack
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# Monitor Opal logs
+docker-compose logs -f armadillo 
+```
+
+**First start**: May take a minute while images are pulled
+
+**Access**: Open `http://localhost:8000` in your browser
+
+**Login**: User `admin` + password from config 
+
+---
+
+## Step 4: Test DataSHIELD Connection
+
+```r
+library(dsBaseClient)
+library(DSI)
+library(DSMolgenisArmadillo)
+
+
+url <- "http://localhost:8000"
+builder <- DSI::newDSLoginBuilder()
+
+builder$append(
+  server = "armadillo",
+  url = url,
+  #token = token,
+  user = "admin",
+  password = "admin",
+  driver = "ArmadilloDriver",
+  profile = "default")
+
+logindata <- builder$build()
+conns <- DSI::datashield.login(logins = logindata)
+
+
+ds.ls()
+```
+
+**Note**: SSL verification disabled for local testing only!
+
+---
+
+## Key Configuration Points
+
+**Network Setup**
+
+- All services on `armadillo-workshop` Docker network
+- Exposed ports: 8000: HTTP 
+
+**Persistence**
+
+- Named volumes preserve data across restarts
+- Remove volumes to reset completely
+
+---
+
+## Troubleshooting
+
+- Ensure port 8000 is free on your system.
+
+## Reset stack
+
+```
+docker compose down -v 
+docker compose up --build
+
+```
+
+
+
+
+---
+
+## Summary
+
+Operational Armadillo datashield Setup!
+Full stack setup (keycloak) available at github! 
+
