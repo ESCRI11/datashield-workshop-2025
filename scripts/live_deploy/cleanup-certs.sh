@@ -20,17 +20,3 @@ echo "Removing certificate directories..."
 rm -rf ssl/live/$DNS_DOMAIN*
 rm -rf ssl/archive/$DNS_DOMAIN*
 rm -rf ssl/renewal/$DNS_DOMAIN*
-
-# Create fresh temporary certificate for nginx startup
-echo "Creating temporary certificate..."
-mkdir -p ssl/live/$DNS_DOMAIN
-
-openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
-    -keyout ssl/live/$DNS_DOMAIN/privkey.pem \
-    -out ssl/live/$DNS_DOMAIN/fullchain.pem \
-    -subj "/C=US/ST=State/L=City/O=Organization/CN=$DNS_DOMAIN"
-
-echo "Cleanup complete. You can now run:"
-echo "1. docker-compose up -d nginx"
-echo "2. docker-compose run --rm certbot"
-echo "3. docker-compose restart nginx" 
