@@ -13,23 +13,32 @@ This setup provides a complete DataShield environment with a reverse proxy for p
 
 ### 1. Configure Environment
 
-Copy and edit the environment file:
+Edit the environment file:
 ```bash
-cp .env.example .env
 # Edit .env with your domain settings
+nano .env
 ```
 
 ### 2. Run Setup Script
 
 ```bash
-chmod +x setup.sh generate-ssl.sh
+chmod +x setup.sh get-certs.sh
 ./setup.sh
 ```
 
 ### 3. Deploy
 
 ```bash
-docker-compose up -d
+# Step 1: Start backend services first
+docker-compose up -d mongo rock opal
+
+# Step 2: Get SSL certificates (requires DNS to be pointing to your server)
+./get-certs.sh
+
+# Step 3: Recreate nginx container to pick up SSL configuration changes
+docker-compose stop nginx
+docker-compose rm -f nginx
+docker-compose up -d nginx
 ```
 
 ## Environment Configuration
@@ -42,9 +51,6 @@ DNS_DOMAIN=your-domain.com          # Your main domain
 
 # Opal Configuration
 OPAL_ADMINISTRATOR_PASSWORD=your-secure-password
-
-# SSL Configuration (for production)
-SSL_EMAIL=admin@your-domain.com
 
 # Network Configuration
 HTTP_PORT=80                        # HTTP port (redirects to HTTPS)
@@ -68,28 +74,24 @@ HTTPS_PORT=443                      # HTTPS port
    A record: your-domain.com -> YOUR_EC2_PUBLIC_IP
    ```
 
-### 3. SSL Certificates (Production)
+### 3. SSL Certificates (Let's Encrypt)
 
-For production, replace self-signed certificates with Let's Encrypt:
+The setup includes automatic Let's Encrypt certificate generation:
 
 ```bash
-# Install certbot
-sudo apt-get update
-sudo apt-get install certbot
+# Ensure your domain points to this server first!
+# Then get SSL certificates
+./get-certs.sh
 
-# Stop nginx temporarily
+# Important: After getting certificates, recreate nginx container
 docker-compose stop nginx
-
-# Generate certificates
-sudo certbot certonly --standalone -d your-domain.com
-
-# Copy certificates
-sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem ssl/nginx-selfsigned.crt
-sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem ssl/nginx-selfsigned.key
-
-# Restart services
-docker-compose up -d
+docker-compose rm -f nginx  
+docker-compose up -d nginx
 ```
+
+**Important**: 
+- Make sure your domain DNS is pointing to your server before running the certificate script
+- You must recreate the nginx container after getting certificates for it to pick up the SSL configuration
 
 ## Accessing Services
 
@@ -136,6 +138,18 @@ tar -czf opal-backup.tar.gz data/opal/
 ```bash
 docker-compose pull
 docker-compose up -d
+```
+
+### Certificate Renewal
+
+Let's Encrypt certificates expire every 90 days. Set up automatic renewal:
+
+```bash
+# Manual renewal
+./renew-certs.sh
+
+# Set up automatic renewal with cron (run monthly)
+echo "0 3 1 * * /path/to/your/deployment/renew-certs.sh" | crontab -
 ```
 
 ## Troubleshooting

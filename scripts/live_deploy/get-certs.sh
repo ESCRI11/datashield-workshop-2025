@@ -22,7 +22,7 @@ rm -rf ssl/renewal/$DNS_DOMAIN*
 
 # Step 2: Start nginx with HTTP-only config
 echo "Starting nginx with HTTP-only configuration..."
-# Update docker-compose to use HTTP-only config (both volume mount and command)
+# Update docker-compose to use HTTP-only config
 sed -i 's|./nginx-template.conf:/etc/nginx/nginx-template.conf:ro|./nginx-http-only.conf:/etc/nginx/nginx-template.conf:ro|g' docker-compose.yml
 docker-compose up -d nginx
 
