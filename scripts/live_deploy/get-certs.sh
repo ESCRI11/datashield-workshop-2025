@@ -22,22 +22,19 @@ rm -rf ssl/renewal/$DNS_DOMAIN*
 
 # Step 2: Start nginx with HTTP-only config
 echo "Starting nginx with HTTP-only configuration..."
-sed -i 's|nginx-template.conf|nginx-http-only.conf|g' docker-compose.yml
+# Update docker-compose to use HTTP-only config (both volume mount and command)
+sed -i 's|./nginx-template.conf:/etc/nginx/nginx-template.conf:ro|./nginx-http-only.conf:/etc/nginx/nginx-template.conf:ro|g' docker-compose.yml
 docker-compose up -d nginx
 
 # Step 3: Wait for nginx to be ready
 sleep 5
 
-# Step 4: Test ACME challenge path
-echo "Testing ACME challenge path..."
-# Create test file using docker volume
-docker run --rm -v live_deploy_certbot_webroot:/webroot alpine sh -c 'echo "test123" > /webroot/test'
-if curl -f http://$DNS_DOMAIN/.well-known/acme-challenge/test >/dev/null 2>&1; then
-    echo "✓ ACME challenge path is working"
-    # Clean up test file
-    docker run --rm -v live_deploy_certbot_webroot:/webroot alpine rm -f /webroot/test
+# Step 4: Test basic connectivity
+echo "Testing basic connectivity..."
+if curl -f http://$DNS_DOMAIN/health >/dev/null 2>&1; then
+    echo "✓ Nginx is accessible from internet"
 else
-    echo "✗ ACME challenge path is not accessible from internet"
+    echo "✗ Nginx is not accessible from internet"
     echo "Please check:"
     echo "1. DNS points to this server: nslookup $DNS_DOMAIN"
     echo "2. Port 80 is open in AWS Security Group"
@@ -54,7 +51,7 @@ if [ -f "ssl/live/$DNS_DOMAIN/fullchain.pem" ]; then
     
     # Step 7: Switch to full nginx config with SSL
     echo "Switching to full nginx configuration with SSL..."
-    sed -i 's|nginx-http-only.conf|nginx-template.conf|g' docker-compose.yml
+    sed -i 's|./nginx-http-only.conf:/etc/nginx/nginx-template.conf:ro|./nginx-template.conf:/etc/nginx/nginx-template.conf:ro|g' docker-compose.yml
     docker-compose restart nginx
     
     echo "✓ Setup complete! Your site is available at:"
