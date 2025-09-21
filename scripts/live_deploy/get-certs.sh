@@ -30,9 +30,12 @@ sleep 5
 
 # Step 4: Test ACME challenge path
 echo "Testing ACME challenge path..."
-docker-compose exec nginx sh -c 'mkdir -p /var/www/certbot && echo "test123" > /var/www/certbot/test'
+# Create test file using docker volume
+docker run --rm -v live_deploy_certbot_webroot:/webroot alpine sh -c 'echo "test123" > /webroot/test'
 if curl -f http://$DNS_DOMAIN/.well-known/acme-challenge/test >/dev/null 2>&1; then
     echo "✓ ACME challenge path is working"
+    # Clean up test file
+    docker run --rm -v live_deploy_certbot_webroot:/webroot alpine rm -f /webroot/test
 else
     echo "✗ ACME challenge path is not accessible from internet"
     echo "Please check:"

@@ -9,7 +9,7 @@ services:
     volumes:
       - ./nginx-template.conf:/etc/nginx/nginx-template.conf:ro
       - ./ssl:/etc/ssl:ro
-      - certbot_webroot:/var/www/certbot:ro
+      - certbot_webroot:/var/www/certbot
     environment:
       - DNS_DOMAIN=${DNS_DOMAIN}
     command: /bin/sh -c "sed \"s/DNS_DOMAIN_PLACEHOLDER/$${DNS_DOMAIN}/g\" /etc/nginx/nginx-template.conf > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
