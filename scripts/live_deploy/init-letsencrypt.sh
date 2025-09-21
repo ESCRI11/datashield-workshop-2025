@@ -46,6 +46,12 @@ sleep 10
 
 echo "Requesting Let's Encrypt certificate..."
 
+# Clean up any existing certificates first
+echo "Cleaning up existing certificates..."
+rm -rf ssl/live/$DNS_DOMAIN*
+rm -rf ssl/archive/$DNS_DOMAIN*
+rm -rf ssl/renewal/$DNS_DOMAIN*
+
 # Request the real certificate
 docker-compose run --rm certbot
 

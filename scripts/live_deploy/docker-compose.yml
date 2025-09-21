@@ -22,7 +22,7 @@ services:
       - certbot_webroot:/var/www/certbot
     environment:
       - DNS_DOMAIN=${DNS_DOMAIN}
-    command: certonly --webroot --webroot-path=/var/www/certbot --register-unsafely-without-email --agree-tos --no-eff-email -d ${DNS_DOMAIN}
+    command: certonly --webroot --webroot-path=/var/www/certbot --register-unsafely-without-email --agree-tos --no-eff-email --expand -d ${DNS_DOMAIN}
 
   opal:
     image: obiba/opal:latest
