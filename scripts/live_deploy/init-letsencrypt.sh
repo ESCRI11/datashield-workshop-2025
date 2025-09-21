@@ -2,6 +2,14 @@
 
 set -e
 
+# Load environment variables from .env file
+if [ -f ".env" ]; then
+    export $(grep -v '^#' .env | xargs)
+else
+    echo "Error: .env file not found"
+    exit 1
+fi
+
 # Check if required environment variables are set
 if [ -z "$DNS_DOMAIN" ]; then
     echo "Error: DNS_DOMAIN must be set in .env file"
