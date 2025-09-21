@@ -29,7 +29,7 @@ rm -rf ssl/renewal/$DNS_DOMAIN*
 echo "Starting services..."
 
 # Start backend services first
-docker-compose up -d mongo rock opal
+docker-compose up -d mongo rock opal nginx
 
 echo "Requesting SSL certificate..."
 
