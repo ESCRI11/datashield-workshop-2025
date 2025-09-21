@@ -1,0 +1,42 @@
+services:
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - opal
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl:ro
+    environment:
+      - DNS_DOMAIN=${DNS_DOMAIN}
+    command: /bin/sh -c "envsubst '$$DNS_DOMAIN' < /etc/nginx/nginx.conf > /tmp/nginx.conf && nginx -g 'daemon off;' -c /tmp/nginx.conf"
+
+  opal:
+    image: obiba/opal:latest
+    depends_on:
+      - rock
+      - mongo
+    environment:
+      - OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - ROCK_HOSTS=rock:8085
+    volumes:
+      - ./data/opal:/srv
+      - ./logs:/var/log/opal
+
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - ./data/mongo:/data/db
+
+  rock:
+    image: datashield/rock-base:latest
+    environment:
+      - ROCK_ID=new-stack-rock
+
+networks:
+  default:
+    name: opalnet
