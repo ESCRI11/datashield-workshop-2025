@@ -12,7 +12,7 @@ services:
       - certbot_webroot:/var/www/certbot:ro
     environment:
       - DNS_DOMAIN=${DNS_DOMAIN}
-    command: /bin/sh -c "sed 's/DNS_DOMAIN_PLACEHOLDER/${DNS_DOMAIN}/g' /etc/nginx/nginx-template.conf > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    command: /bin/sh -c "sed \"s/DNS_DOMAIN_PLACEHOLDER/$${DNS_DOMAIN}/g\" /etc/nginx/nginx-template.conf > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
     restart: unless-stopped
 
   certbot:
