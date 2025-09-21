@@ -38,9 +38,6 @@ docker-compose up certbot
 
 echo "Starting nginx (will restart automatically once certificates are ready)..."
 
-# Start nginx - it will fail and restart until certificates are available
-docker-compose up -d nginx
-
 echo ""
 echo "Setup complete!"
 echo "- Nginx is starting and will restart until SSL certificates are ready"
