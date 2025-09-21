@@ -9,9 +9,20 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/ssl:ro
+      - certbot_webroot:/var/www/certbot:ro
     environment:
       - DNS_DOMAIN=${DNS_DOMAIN}
     command: /bin/sh -c "envsubst '$$DNS_DOMAIN' < /etc/nginx/nginx.conf > /tmp/nginx.conf && nginx -g 'daemon off;' -c /tmp/nginx.conf"
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./ssl:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    environment:
+      - DNS_DOMAIN=${DNS_DOMAIN}
+    command: certonly --webroot --webroot-path=/var/www/certbot --register-unsafely-without-email --agree-tos --no-eff-email -d ${DNS_DOMAIN}
 
   opal:
     image: obiba/opal:latest
@@ -36,6 +47,9 @@ services:
     image: datashield/rock-base:latest
     environment:
       - ROCK_ID=new-stack-rock
+
+volumes:
+  certbot_webroot:
 
 networks:
   default:
