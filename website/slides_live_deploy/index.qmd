@@ -1,0 +1,216 @@
+---
+title: "Opal Live Deployment"
+subtitle: "Dick Postma and Xavier Escribà Montagut"
+format: 
+  revealjs:
+    theme: default
+    slide-number: true
+    chalkboard: true
+    preview-links: auto
+    css: styles.css
+---
+
+## Overview
+
+**Goal**: Take your local DataSHIELD deployment public with production-grade security
+
+**Why go live?**
+
+- 🌐 **Global access** - colleagues can connect from anywhere
+- 🔒 **Real SSL certificates** - no more security warnings
+- 🚀 **Production-ready** - proper reverse proxy and hardening
+- 🤝 **Collaboration** - share with research partners worldwide
+- 📊 **Real research** - ready for actual data and studies
+
+---
+
+## Two Paths to Production
+
+**🏛️ Path 1: Research Center IT (Recommended)**
+
+- You: Deploy locally on institutional server
+- IT: Handles DNS, SSL, firewalls, security
+- Best for: Most research scenarios
+
+
+**☁️ Path 2: Full Cloud Deployment (What we'll show)**
+
+- You: Handle everything from server to SSL
+- Best for: Complete control, learning, cloud deployments
+- We'll demo this path for full understanding!
+
+---
+
+## Architecture Transformation
+
+```
+Local (HTTP only)          →    Production (HTTPS + Security)
+┌─────────────────┐        →    ┌─────────────────────────────┐
+│ Browser:8080    │        →    │ Browser → your-domain.com   │
+│       ↓         │        →    │       ↓                     │
+│ Opal (direct)   │        →    │ Nginx (SSL + Security)      │
+└─────────────────┘        →    │       ↓                     │
+                           →    │ Opal (protected)            │
+                           →    └─────────────────────────────┘
+```
+
+**New components**: Nginx reverse proxy + Certbot for SSL
+
+---
+
+## Prerequisites
+
+**Domain & DNS**
+
+- Registered domain + DNS A/AAAA to your server's public IP
+
+**Server & Network**
+
+- Linux server (Ubuntu 22.04/24.04 recommended)
+- Ports 80 and 443 open to internet
+- Docker + Docker Compose installed
+
+**Verification**: `nslookup your-domain.com` should return your server IP
+
+---
+
+## File Structure
+
+```
+datashield-live/
+├── .env                    # 🔧 YOU EDIT: Domain + password
+├── docker-compose.yml      # 📋 PROVIDED: All services
+├── nginx-template.conf     # 📋 PROVIDED: SSL config
+├── nginx-http-only.conf    # 📋 PROVIDED: Temp config
+├── get-certs.sh            # 🚀 PROVIDED: SSL setup
+└── renew-certs.sh          # 🔄 PROVIDED: Auto renewal
+```
+
+<br>
+
+**You only edit ONE file** (`.env`) - everything else is ready!
+
+---
+
+## Step 1: Environment Configuration
+
+**Only file you need to edit:**
+
+```bash
+# DNS Configuration - CHANGE THIS!
+DNS_DOMAIN=datashield.myresearch.org
+
+# Opal Configuration - CHANGE THIS!
+OPAL_ADMINISTRATOR_PASSWORD=SuperSecurePassword123!
+```
+
+<br>
+
+⚠️ **Critical**: Ensure DNS points to your server before proceeding!
+
+🔐 **Security**: Use a strong password - this protects your entire DataSHIELD server
+
+---
+
+## Step 2: The Magic Three-Step Deploy
+
+```bash
+# 🚀 Step 1: Start DataSHIELD services
+docker-compose up -d mongo rock opal
+sleep 30  # Let services initialize
+
+# 🔒 Step 2: Get SSL certificates
+./get-certs.sh
+
+# 🔄 Step 3: Start Nginx with SSL
+docker-compose stop nginx
+docker-compose rm -f nginx  
+docker-compose up -d nginx
+
+echo "🎉 Production deployment complete!"
+```
+
+**That's it!** Three commands and you're live.
+
+---
+
+## Step 3: Verification & Testing
+
+**Web Access**
+
+- Open `https://your-domain.com`
+- Look for 🔒 green lock icon
+- Login: `administrator` + your password
+
+---
+
+## Step 3: R Connection Test
+
+**Connect from R**
+
+```r
+library(DSI)
+library(DSOpal) 
+library(dsBaseClient)
+
+b <- DSI::newDSLoginBuilder()
+b$append(server = "production",
+         url = "https://your-domain.com",
+         user = "administrator", 
+         password = "your-password")
+
+conns <- DSI::datashield.login(b$build())
+ds.ls()
+```
+
+---
+
+## Maintenance & Monitoring
+
+**Certificate Renewal** (automatic)
+```bash
+# Test renewal
+docker compose run --rm certbot renew --dry-run
+
+# Cron job for auto-renewal
+0 3 * * * cd /path/to/deployment && \
+  docker compose run --rm certbot renew && \
+  docker compose exec nginx nginx -s reload
+```
+
+**Health Monitoring**
+
+- Monitor logs: `docker-compose logs`
+- Service status: `docker-compose ps`
+
+---
+
+## Troubleshooting
+
+**DNS Issues**
+
+- Verify: `nslookup your-domain.com` returns server IP
+- DNS propagation can take up to 48 hours
+
+**SSL Certificate Problems**
+
+- Ensure ports 80/443 are open
+
+**Connection Failures**
+
+- Verify all services running: `docker-compose ps`
+- Check firewall/security groups allow 80/443
+
+---
+
+## Summary
+
+✅ **Achieved**: Production Opal deployment
+
+🚀 **New capabilities**:
+
+- HTTPS access with SSL certificates
+- "Normal" domain name
+- Automatic certificate management
+
+🎯 **Ready for**: Real-world research collaboration and data analysis!

@@ -4,6 +4,13 @@ format: html
 engine: knitr
 ---
 
+```{css}
+#| echo: false
+p {
+  text-align: justify
+}
+```
+
 <style>
 .slide-deck {
     border: 3px solid #dee2e6;

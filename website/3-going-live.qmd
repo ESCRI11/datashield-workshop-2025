@@ -1,5 +1,5 @@
 ---
-title: "3. Going live: public deployment"
+title: "3. Going live: cloud deployment"
 format: html
 engine: knitr
 ---
@@ -11,8 +11,67 @@ p {
 }
 ```
 
+<style>
+.slide-deck {
+    border: 3px solid #dee2e6;
+    width: 100%;
+    height: 475px;
+}
+</style>
+
+<div>
+```{=html}
+
+<iframe class="slide-deck" src="slides_live_deploy/index.html"></iframe>
+```
+</div>
+
 ### Goal
-Promote the local Opal stack to a public, DNS-backed deployment with valid TLS certificates from Let’s Encrypt (Certbot). We’ll reuse the same services, add ACME challenge handling, and tighten proxy settings.
+Take your local DataShield deployment public! We'll deploy Opal + Rock + MongoDB to a live server with automatic SSL certificates, proper security, and a production-ready reverse proxy. By the end, you'll have a fully functional DataShield server accessible from anywhere on the internet.
+
+### Two paths to going public
+
+When you're ready to make your DataShield deployment publicly accessible, you have **two main options**:
+
+#### Path 1: Research Center IT (Recommended for most users)
+- **What you do**: Deploy DataShield locally on a server provided by your research center (using the setup from section 2)
+- **What IT does**: Configure firewall rules, domain names, SSL certificates, and network access
+- **Best for**: Most research scenarios where your institution has dedicated IT support
+- **Pros**: IT handles security, compliance, and infrastructure concerns
+- **Cons**: Requires coordination with IT department, may have institutional restrictions
+
+#### Path 2: Full Cloud Deployment (What we'll demonstrate)
+- **What you do**: Everything - from server setup to SSL certificates to security configuration
+- **Best for**: Cloud deployments (AWS, Azure, GCP), personal projects, or when you need full control
+- **Pros**: Complete control, faster iteration, great for learning
+- **Cons**: You're responsible for security, updates, and maintenance
+
+**In this workshop**, we'll demonstrate **Path 2** using AWS because it shows the complete process and gives you full understanding of all components. However, in practice, **Path 1** is often the most appropriate choice for research environments.
+
+### What we'll build today
+We're going to transform your local setup into a production-ready deployment with:
+
+- **Automatic SSL certificates** from Let's Encrypt
+- **Reverse proxy** serve your application via `https`
+- **Proper domain access** - your colleagues can access it! via `https://your-domain.com` (not a weird IP address)
+- **All the security bells and whistles** that make IT departments happy (hopefully)
+
+
+### Architecture (public)
+```{mermaid}
+graph LR
+  U["User<br/>https://your-domain.com"] -->|DNS resolves| N["Nginx (80/443)"]
+  N -->|proxy https->http| O["Opal (8080)"]
+  subgraph Profiles["docker network: opalnet"]
+    O -->|R/DataSHIELD| R["Rock (8085)"]
+    O -->|Data storage| MONGO["MongoDB (27017)"]
+  end
+  ACME["Certbot webroot<br/>/.well-known/acme-challenge/"] -.->|HTTP-01| N
+
+  %% Define a lighter background for the subgraph
+  classDef light fill:#f9f9f9,stroke:#aaa,stroke-width:1px;
+  class Profiles light;
+```
 
 ### Prerequisites
 - Registered domain name, e.g. `opal.example.org`
@@ -20,92 +79,66 @@ Promote the local Opal stack to a public, DNS-backed deployment with valid TLS c
 - Ports 80 and 443 open to the internet (cloud SG/firewall/ufw)
 - Linux host recommended (Ubuntu 22.04/24.04), Docker + Compose v2
 
-### Files layout
-Use this folder layout for production:
+### Architecture transformation
+We're taking your simple local setup and adding production-grade components:
 
-```
-opal-live/
-├── .env
-├── docker-compose.yml
-├── nginx/
-│   └── conf.d/
-│       └── default.conf
-├── certbot/
-│   └── www/                 # ACME webroot served on port 80
-└── letsencrypt/             # Certificates + renewal configs (populated by Certbot)
-```
+- **Nginx** (NEW!): Acts as a security guard and traffic director
+  - Handles SSL certificates
+  - Adds security headers to protect against attacks
+  - Rate limits to prevent abuse (optional)
+- **Opal**: Your existing DataShield administration server (now behind the proxy)
+- **Rock**: Your existing R computation server (unchanged)
+- **MongoDB**: Your existing database backend (unchanged)
+- **Certbot** (NEW!): Automatically gets and renews SSL certificates from Let's Encrypt
 
-Create the directories:
+### Files you'll be working with
+Don't worry - it's not as complex as it looks! All of these files are provided in our [live deployment scripts](https://github.com/ESCRI11/datashield-workshop-2025/tree/main/scripts/live_deploy){target="_blank"}:
 
 ```bash
-mkdir -p opal-live/nginx/conf.d opal-live/certbot/www opal-live/letsencrypt
+datashield-live/
+├── .env                    # 🔧 YOU EDIT: Just your domain name and password
+├── docker-compose.yml      # 📋 PROVIDED: Orchestrates all services
+├── nginx-template.conf     # 📋 PROVIDED: Nginx configuration with SSL
+├── nginx-http-only.conf    # 📋 PROVIDED: Temporary config for getting certificates
+├── get-certs.sh            # 🚀 PROVIDED: One-click SSL certificate setup
+└── renew-certs.sh          # 🔄 PROVIDED: Automatic certificate renewal
 ```
 
-### 1) .env (public)
+**You literally only need to edit ONE file** (`.env`) - everything else is ready to go!
 
-```
-SERVER_NAME=opal.example.org
-EMAIL=admin@example.org
-OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
-MYSQLDATA_DATABASE=opal_data
-MYSQLDATA_USER=opal
-MYSQLDATA_PASSWORD=opalpass
+### 1) Environment Configuration
+
+This is the **only file you need to edit**! Create your `.env` file:
+
+```bash
+# DNS Configuration - CHANGE THIS to your actual domain!
+DNS_DOMAIN=datashield.myresearch.org
+# Opal Configuration - CHANGE THIS to a strong password!
+OPAL_ADMINISTRATOR_PASSWORD=SuperSecurePassword123!
 ```
 
-### 2) docker-compose.yml (with Certbot)
-This extends the local setup by adding a `certbot` service and volumes for ACME and certificates.
+::: {.callout-important}
+**Domain setup is crucial!** Before proceeding, make sure your domain's DNS A record points to your server's public IP address. You can check this with:
+```bash
+nslookup datashield.myresearch.org
+# Should return your server's IP address
+```
+:::
+
+::: {.callout-tip}
+**Password security tip**: Use a password manager to generate a strong password. This will be the admin password for your DataShield server, so make it count!
+:::
+
+::: {.callout-note}
+As mentioned before, in production, you should use Docker secrets, Kubernetes secrets, or your platform's native secrets management system. We use a static file here for simplicity.
+:::
+
+### 2) Docker Compose Configuration
+
+The `docker-compose.yml` includes nginx reverse proxy, automatic SSL certificates, and all DataShield services:
 
 ```yaml
-version: "3.9"
-
 services:
-  opal:
-    image: obiba/opal:latest
-    depends_on:
-      - rock
-      - mongo
-      - mysqldata
-    environment:
-      - OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}
-      - MONGO_HOST=mongo
-      - MONGO_PORT=27017
-      - MYSQLDATA_HOST=mysqldata
-      - MYSQLDATA_DATABASE=${MYSQLDATA_DATABASE}
-      - MYSQLDATA_USER=${MYSQLDATA_USER}
-      - MYSQLDATA_PASSWORD=${MYSQLDATA_PASSWORD}
-      - ROCK_HOSTS=rock:8085
-      - APP_URL=https://${SERVER_NAME}
-      - CSRF_ALLOWED=${SERVER_NAME}
-    volumes:
-      - opal_srv:/srv
-    networks:
-      - opalnet
-
-  rock:
-    image: obiba/rock:latest
-    networks:
-      - opalnet
-
-  mongo:
-    image: mongo:6.0
-    command: ["mongod", "--bind_ip_all"]
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - opalnet
-
-  mysqldata:
-    image: mysql:8
-    environment:
-      - MYSQL_DATABASE=${MYSQLDATA_DATABASE}
-      - MYSQL_USER=${MYSQLDATA_USER}
-      - MYSQL_PASSWORD=${MYSQLDATA_PASSWORD}
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - opalnet
-
   nginx:
     image: nginx:alpine
     depends_on:
@@ -114,110 +147,114 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./certbot/www:/var/www/certbot:ro
-      - ./letsencrypt:/etc/letsencrypt:ro
-    networks:
-      - opalnet
+      - ./nginx-template.conf:/etc/nginx/nginx-template.conf:ro
+      - ./ssl:/etc/ssl:ro
+    environment:
+      - DNS_DOMAIN=${DNS_DOMAIN}
+    command: /bin/sh -c "sed \"s/DNS_DOMAIN_PLACEHOLDER/$${DNS_DOMAIN}/g\" /etc/nginx/nginx-template.conf > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    restart: unless-stopped
 
   certbot:
     image: certbot/certbot:latest
     volumes:
-      - ./letsencrypt:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: sh -c "trap 'exit 0' TERM; tail -f /dev/null"
+      - ./ssl:/etc/letsencrypt
+    environment:
+      - DNS_DOMAIN=${DNS_DOMAIN}
+    command: certonly --webroot --webroot-path=/var/www/certbot --register-unsafely-without-email --agree-tos --no-eff-email --expand -d ${DNS_DOMAIN}
 
-volumes:
-  opal_srv:
-  mysql_data:
-  mongo_data:
+  opal:
+    image: obiba/opal:latest
+    depends_on:
+      - rock
+      - mongo
+    environment:
+      - OPAL_ADMINISTRATOR_PASSWORD=${OPAL_ADMINISTRATOR_PASSWORD}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - ROCK_HOSTS=rock:8085
+    volumes:
+      - ./data/opal:/srv
+      - ./logs:/var/log/opal
+
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - ./data/mongo:/data/db
+
+  rock:
+    image: datashield/rock-base:latest
+    environment:
+      - ROCK_ID=new-stack-rock
 
 networks:
-  opalnet:
+  default:
+    name: opalnet
 ```
 
-### 3) Nginx config for ACME + TLS
-Set `nginx/conf.d/default.conf`. Replace `opal.example.org` with your real domain. Nginx does not expand env vars inside config; use the literal domain.
+### 3) AWS Setup
 
-```nginx
-upstream opal_upstream {
-  server opal:8080;
-  keepalive 32;
-}
+#### EC2 Instance Setup
+1. Launch an EC2 instance (recommended: t3.medium or larger)
+2. Configure Security Group rules:
+   - Port 80 (HTTP) - open to 0.0.0.0/0
+   - Port 443 (HTTPS) - open to 0.0.0.0/0
+   - Port 22 (SSH) - open to your IP
 
-# HTTP: serve ACME challenge, redirect everything else to HTTPS
-server {
-  listen 80;
-  server_name opal.example.org;
-
-  location /.well-known/acme-challenge/ {
-    root /var/www/certbot;
-  }
-
-  location / {
-    return 301 https://$host$request_uri;
-  }
-}
-
-# HTTPS: terminate TLS and proxy to Opal
-server {
-  listen 443 ssl http2;
-  server_name opal.example.org;
-
-  ssl_certificate     /etc/letsencrypt/live/opal.example.org/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/opal.example.org/privkey.pem;
-  ssl_session_timeout 1d;
-  ssl_session_cache shared:SSL:10m;
-  ssl_protocols TLSv1.2 TLSv1.3;
-  ssl_ciphers HIGH:!aNULL:!MD5;
-  ssl_prefer_server_ciphers on;
-  add_header Strict-Transport-Security "max-age=31536000" always;
-
-  client_max_body_size 200m;
-
-  location / {
-    proxy_pass http://opal_upstream;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto https;
-    proxy_read_timeout 300s;
-  }
-}
+#### Domain Configuration
+Point your domain DNS to the EC2 instance public IP:
+```
+A record: your-domain.com -> YOUR_EC2_PUBLIC_IP
 ```
 
-### 4) Issue the certificate
-- Ensure DNS resolves `opal.example.org` to your server and port 80 is reachable.
-- Start Nginx (and base services):
+### 4) The Magic Deployment Process ✨
 
+Ready for the exciting part? Let's go live! 
+
+#### Step 1: Configure your environment
 ```bash
-cd opal-live
-docker compose up -d nginx
+# Edit the .env file with your domain and password
+nano .env
+# (Or use your favorite editor: vim, code, etc.)
 ```
 
-- Request the certificate using the webroot method:
-
+#### Step 2: The three-step dance to production! 🕺
 ```bash
-docker compose run --rm certbot certonly \
-  --webroot -w /var/www/certbot \
-  -d ${SERVER_NAME} \
-  --email ${EMAIL} --agree-tos --no-eff-email
+# 🚀 Step 1: Start the core DataShield services
+echo "Starting DataShield services..."
+docker-compose up -d mongo rock opal
+
+# ⏳ Wait a moment for services to initialize
+echo "Services starting... (this takes about 30 seconds)"
+sleep 30
+
+# 🔒 Step 2: Get your shiny SSL certificates!
+echo "Getting SSL certificates from Let's Encrypt..."
+./get-certs.sh
+
+# 🔄 Step 3: Restart nginx with the new certificates
+echo "Configuring nginx with SSL certificates..."
+docker-compose stop nginx
+docker-compose rm -f nginx
+docker-compose up -d nginx
+
+echo "🎉 Deployment complete!"
 ```
 
-- Reload Nginx to pick up the new certs:
+#### Step 3: The moment of truth! 
+Open your browser and visit `https://your-domain.com`
 
-```bash
-docker compose exec nginx nginx -s reload
-```
+You should see:
 
-- Bring up the rest (if not already):
+- 🔒 A beautiful green lock icon (SSL is working!)
+- 🏠 The familiar Opal login page
+- 🎯 No browser security warnings
 
-```bash
-docker compose up -d
-```
+Log in with:
 
-Visit `https://opal.example.org` and log in as `administrator` with the password from `.env`.
+- **Username**: `administrator`
+- **Password**: The password you set in `.env`
+
+**If you see the Opal dashboard, congratulations! 🎉 You just deployed DataShield to production!**
 
 ### 5) Automatic renewal
 Let’s Encrypt certs expire every ~90 days. Renew periodically and reload Nginx.
@@ -233,55 +270,67 @@ docker compose run --rm certbot renew --dry-run -w /var/www/certbot
 
 If port 80 cannot be opened, consider DNS-01 challenges (requires DNS provider API integration) instead of HTTP-01.
 
-### 6) Verify from R (public TLS)
-Now that you have a valid certificate, you do not need to disable TLS verification.
+### 6) Testing your live deployment 🧪
+
+#### Web Access
+- **🏠 Main DataShield Interface**: https://your-domain.com
+- **❤️ Health Check**: https://your-domain.com/health (should return "healthy")
+
+#### Your new credentials
+- **Username**: `administrator`
+- **Password**: Whatever you set in `.env` as `OPAL_ADMINISTRATOR_PASSWORD`
+
+#### The R test that proves it's working
+Now for the **real test** - connecting from R with **proper SSL security** (no more scary certificate warnings!):
 
 ```r
-# install.packages(c("DSI", "DSOpal"))
+# Install packages if you haven't already
+# install.packages(c("DSI", "DSOpal", "dsBaseClient"))
+
 library(DSI)
 library(DSOpal)
+library(dsBaseClient)
 
+# 🎉 Notice: No more SSL verification overrides needed!
+# Your server now has a proper certificate!
+
+# Set up your connection
 b <- DSI::newDSLoginBuilder()
 b$append(
-  server   = "live",
-  url      = "https://opal.example.org",
-  user     = "administrator",
-  password = Sys.getenv("OPAL_PWD"),
-  driver   = "Opal"
+  server   = "production",
+  url      = "https://your-domain.com",  # 🔒 HTTPS with real certificate!
+  user     = "administrator", 
+  password = "youpassword!" # From .env
 )
+
+# Connect and test
 logins <- b$build()
 conns <- DSI::datashield.login(logins)
 
-DSI::datashield.pkg_status(conns)
-DSI::datashield.logout(conns)
+ds.ls()
 ```
 
-### Architecture (public)
-```{mermaid}
-graph LR
-  U["User<br/>https://opal.example.org"] -->|DNS resolves| N["Nginx (80/443)"]
-  N -->|proxy https->http| O["Opal (8080)"]
-  subgraph Profiles["docker network: opalnet"]
-    O -->|R/DataSHIELD| R["Rock (8085)"]
-    O -->|Data storage| MSQL["MySQL (3306)"]
-    O -->|Auxiliary| MONGO["MongoDB (27017)"]
-  end
-  ACME["Certbot webroot<br/>/.well-known/acme-challenge/"] -.->|HTTP-01| N
+**🎯 Success indicators:**
 
-  %% Define a lighter background for the subgraph
-  classDef light fill:#f9f9f9,stroke:#aaa,stroke-width:1px;
-  class Profiles light;
-```
+- No SSL certificate warnings in R
+- Connection establishes without errors
+- Your browser shows a green lock icon
+
+#### Share with colleagues! 
+
+Your DataShield server is now accessible to collaborators anywhere in the world:
+
+- Just share the URL: `https://your-domain.com`
+- They can use the same R connection code (with their own credentials)
+- No VPN or special network setup required!
 
 ### Troubleshooting & hardening
 - DNS propagation can take time. Check: `dig +short opal.example.org` resolves to your IP.
 - Ensure 80/443 reach your host (cloud SG, ufw, on-prem firewall). Test: `curl -I http://opal.example.org/.well-known/acme-challenge/test` (should hit Nginx).
-- Permissions: `letsencrypt/` must be writable by the `certbot` container (mapped volume).
 - Set strong TLS only (we used TLS1.2/1.3 and HIGH ciphers) and enable HSTS.
 - Consider limiting Nginx request sizes, enabling access logs, and fail2ban/WAF if exposed to the internet.
-- Update Opal `APP_URL` and `CSRF_ALLOWED` for your domain (already in compose).
 
 References:
+
 - Opal Docker image and configuration: [Installation — Docker Image](https://opaldoc.obiba.org/en/latest/admin/installation.html), [Configuration](https://opaldoc.obiba.org/en/latest/admin/configuration.html)
 - Nginx/Certbot flow: [DigitalOcean — Secure Nginx with Let’s Encrypt (Ubuntu)](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-22-04)
-- Templates inspiration: [`docker-compose.yml.tpl`](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/docker-compose.yml.tpl), [`nginx.conf.tpl`](https://github.com/isglobal-brge/easy-opal/blob/main/src/templates/nginx.conf.tpl) — see also [`src/commands`](https://github.com/isglobal-brge/easy-opal/tree/main/src/commands)

@@ -52,10 +52,12 @@ if [ -f "ssl/live/$DNS_DOMAIN/fullchain.pem" ]; then
     # Step 7: Switch to full nginx config with SSL
     echo "Switching to full nginx configuration with SSL..."
     sed -i 's|./nginx-http-only.conf:/etc/nginx/nginx-template.conf:ro|./nginx-template.conf:/etc/nginx/nginx-template.conf:ro|g' docker-compose.yml
-    docker-compose restart nginx
     
-    echo "✓ Setup complete! Your site is available at:"
-    echo "  https://$DNS_DOMAIN"
+    echo "✓ Setup complete!"
+    echo "Now run:"
+    echo "docker-compose stop nginx"
+    echo "docker-compose rm -f nginx"
+    echo "docker-compose up -d nginx"
 else
     echo "✗ Failed to obtain SSL certificates"
     echo "Check the logs: docker-compose logs certbot"
