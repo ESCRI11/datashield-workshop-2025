@@ -22,7 +22,7 @@ This site hosts materials for a hands‑on workshop on deploying and managing Op
 
 # Workshop Details
 
-This workshop will be delivered at the **DataSHIELD 2025 Conference** hosted by the SIB Swiss Institute of Bioinformatics at the University of Lausanne (UniL), Switzerland, on **Tuesday, September 23rd from 13:30 to 16:30** at room **POL-338** (TBC).
+This workshop will be delivered at the **DataSHIELD 2025 Conference** hosted by the SIB Swiss Institute of Bioinformatics at the University of Lausanne (UniL), Switzerland, on **Tuesday, September 23rd from 13:30 to 16:30** at room **POL-338**.
 
 # Getting started
 
