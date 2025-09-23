@@ -30,8 +30,6 @@ format:
 **🗄️ Filesystem (File Store)**
 - Files are stored locally on disk.  
 
-**
-
 ---
 
 ## File Structure
@@ -50,7 +48,7 @@ local-deploy-armadillo
 
 ## Step 1: Armadillo configuration 
 
-```
+```yaml
 armadillo:
   docker-management-enabled: false
   docker-run-in-container: true

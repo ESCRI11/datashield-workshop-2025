@@ -411,7 +411,6 @@
 <p><strong>🔧 Rock (R Server)</strong> - Executes R/DataSHIELD calls from Armadillo</p>
 <p><br></p>
 <p><strong>🗄️ Filesystem (File Store)</strong> - Files are stored locally on disk.</p>
-<p>**</p>
 </section>
 <section id="file-structure" class="slide level2">
 <h2>File Structure</h2>
@@ -426,32 +425,31 @@
 </section>
 <section id="step-1-armadillo-configuration" class="slide level2">
 <h2>Step 1: Armadillo configuration</h2>
-<pre><code>armadillo:
-  docker-management-enabled: false
-  docker-run-in-container: true
-  profiles:
-    - name: default
-      image: datashield/rock-base:latest
-      port: 8085
-      host: rserver
-      package-whitelist:
-        - dsBase
-      function-blacklist: [ ]
-      options:
-        datashield:
-          seed: 342325352
-
-# required settings:
-spring:
-  security:
-    user:
-      # please change this admin password!
-      password: admin!!!
-
-storage:
-  ## to change location of the data storage
-  root-dir: /data
-</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href=""></a><span class="fu">armadillo</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href=""></a><span class="at">  </span><span class="fu">docker-management-enabled</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb2-3"><a href=""></a><span class="at">  </span><span class="fu">docker-run-in-container</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-4"><a href=""></a><span class="at">  </span><span class="fu">profiles</span><span class="kw">:</span></span>
+<span id="cb2-5"><a href=""></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> default</span></span>
+<span id="cb2-6"><a href=""></a><span class="at">      </span><span class="fu">image</span><span class="kw">:</span><span class="at"> datashield/rock-base:latest</span></span>
+<span id="cb2-7"><a href=""></a><span class="at">      </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">8085</span></span>
+<span id="cb2-8"><a href=""></a><span class="at">      </span><span class="fu">host</span><span class="kw">:</span><span class="at"> rserver</span></span>
+<span id="cb2-9"><a href=""></a><span class="at">      </span><span class="fu">package-whitelist</span><span class="kw">:</span></span>
+<span id="cb2-10"><a href=""></a><span class="at">        </span><span class="kw">-</span><span class="at"> dsBase</span></span>
+<span id="cb2-11"><a href=""></a><span class="at">      </span><span class="fu">function-blacklist</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at"> </span><span class="kw">]</span></span>
+<span id="cb2-12"><a href=""></a><span class="at">      </span><span class="fu">options</span><span class="kw">:</span></span>
+<span id="cb2-13"><a href=""></a><span class="at">        </span><span class="fu">datashield</span><span class="kw">:</span></span>
+<span id="cb2-14"><a href=""></a><span class="at">          </span><span class="fu">seed</span><span class="kw">:</span><span class="at"> </span><span class="dv">342325352</span></span>
+<span id="cb2-15"><a href=""></a></span>
+<span id="cb2-16"><a href=""></a><span class="co"># required settings:</span></span>
+<span id="cb2-17"><a href=""></a><span class="fu">spring</span><span class="kw">:</span></span>
+<span id="cb2-18"><a href=""></a><span class="at">  </span><span class="fu">security</span><span class="kw">:</span></span>
+<span id="cb2-19"><a href=""></a><span class="at">    </span><span class="fu">user</span><span class="kw">:</span></span>
+<span id="cb2-20"><a href=""></a><span class="co">      # please change this admin password!</span></span>
+<span id="cb2-21"><a href=""></a><span class="at">      </span><span class="fu">password</span><span class="kw">:</span><span class="at"> admin!!!</span></span>
+<span id="cb2-22"><a href=""></a></span>
+<span id="cb2-23"><a href=""></a><span class="fu">storage</span><span class="kw">:</span></span>
+<span id="cb2-24"><a href=""></a><span class="co">  ## to change location of the data storage</span></span>
+<span id="cb2-25"><a href=""></a><span class="at">  </span><span class="fu">root-dir</span><span class="kw">:</span><span class="at"> /data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="step-2-docker-compose-simplified" class="slide level2">
 <h2>Step 2: Docker Compose (simplified)</h2>
