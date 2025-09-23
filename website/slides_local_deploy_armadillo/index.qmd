@@ -176,7 +176,7 @@ ds.ls()
 
 ## Reset stack
 
-```
+```bash
 docker compose down -v 
 docker compose up --build
 
