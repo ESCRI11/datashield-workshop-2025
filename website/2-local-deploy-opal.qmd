@@ -88,6 +88,46 @@ OPAL_ADMINISTRATOR_PASSWORD=ChangeMe123!
 **Production note**: For production deployments, the most correct way to handle sensitive information is through Docker secrets, Kubernetes secrets, or your platform's native secrets management system. We use a `.env` file here for workshop simplicity, which also helps reduce the risk of password leaks when sharing docker-compose files to colleagues or collaborators.
 :::
 
+::: {.callout-tip collapse="true"}
+## How to use Docker secrets
+
+We will explain briefly how to use Docker secrets to store the OPAL_ADMINISTRATOR_PASSWORD information in a secure way.
+
+In order to create a Docker secret, you can run the following command:
+
+```bash
+echo -n "ChangeMe123!" | docker secret create opal_admin_password -
+```
+
+This will create a secret named `opal_admin_password` with the value `ChangeMe123!`.
+
+To use the secret on the docker-compose.yml file, we have to modify it as follows:
+
+```yaml
+services:
+  opal:
+    [...]
+    environment:
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - ROCK_HOSTS=rock:8085
+    secrets:
+      - opal_admin_password
+    [...]
+    entrypoint: >
+      sh -c "export OPAL_ADMINISTRATOR_PASSWORD=$$(cat /run/secrets/opal_admin_password) &&
+             exec /usr/local/bin/opal"
+```
+
+Note that secrets only work when we use Docker in swarm mode. We will have to run:
+
+```bash
+docker swarm init   # if not already done
+docker stack deploy -c docker-compose.yml mystack
+```
+
+:::
+
 ### 2) docker-compose.yml
 Defines Opal, Rock, and MongoDB. Key env vars match Opal docs (MONGO_*, ROCK_HOSTS) [opaldoc installation](https://opaldoc.obiba.org/en/latest/admin/installation.html).
 
