@@ -20,7 +20,6 @@ format:
 - 🔒 **Real SSL certificates** - no more security warnings
 - 🚀 **Production-ready** - proper reverse proxy and hardening
 - 🤝 **Collaboration** - share with research partners worldwide
-- 📊 **Real research** - ready for actual data and studies
 
 ---
 

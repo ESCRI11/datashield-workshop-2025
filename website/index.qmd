@@ -58,3 +58,13 @@ To be announced.
 # Credits
 
 Materials developed by Dick Postma (Molgenis) and Xavier Escribà Montagut (BigOmics Analytics SA).
+
+# Contact
+
+Dick Postma
+
+`f.d.postma` at `umcg.nl`
+
+Xavier Escribà Montagut
+
+`xavier.escriba.montagut` at `gmail.com`
