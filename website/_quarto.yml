@@ -5,7 +5,7 @@ project:
 book:
   title: "DataSHIELD Workshop: Setting up the infrastructure"
   author: Dick Postma and Xavier Escribà Montagut
-  repo-url: https://github.com/ESCRI11/datashield-workshop-2025
+  repo-url: https://github.com/datashield/datashield-workshop-2025
   repo-actions: [issue]
   sharing: [twitter, linkedin]
   favicon: favicon.ico

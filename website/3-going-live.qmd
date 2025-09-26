@@ -92,7 +92,7 @@ We're taking your simple local setup and adding production-grade components:
 - **Certbot** (NEW!): Automatically gets and renews SSL certificates from Let's Encrypt
 
 ### Files you'll be working with
-Don't worry - it's not as complex as it looks! All of these files are provided in our [live deployment scripts](https://github.com/ESCRI11/datashield-workshop-2025/tree/main/scripts/live_deploy){target="_blank"}:
+Don't worry - it's not as complex as it looks! All of these files are provided in our [live deployment scripts](https://github.com/datashield/datashield-workshop-2025/tree/main/scripts/live_deploy){target="_blank"}:
 
 ```bash
 datashield-live/
